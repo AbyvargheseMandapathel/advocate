@@ -14,14 +14,16 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 # from django.contrib.auth.forms import SetPasswordForm
 from .forms import CustomPasswordResetForm  # Import your custom form class
+from django.core.exceptions import ValidationError
+
 
 
 
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        email = request.POST['email']  # Change this to 'email'
         password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=email, password=password)  # Use email for authentication
         if user is not None:
             login(request, user)
             if user.user_type == 'admin':
@@ -36,11 +38,47 @@ def login_view(request):
 
 def signup_view(request):
     if request.method == 'POST':
-        username = request.POST['username']
+        email = request.POST['email']
         password = request.POST['password']
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        adharno = request.POST['adharno']
+        address = request.POST['address']
+        dob = request.POST['dob']
+        pin = request.POST['pin']
+        state = request.POST['state']
+        phone = request.POST['phone']
         user_type = request.POST['user_type']
-        user = CustomUser.objects.create_user(username=username, password=password, user_type=user_type)
+
+        
+        # Check if the email is already in use
+        if CustomUser.objects.filter(email=email).exists():
+            # You can customize this error message as needed
+            raise ValidationError('This email is already in use.')
+
+        # Check if the user creating the account is a superuser
+        # if request.user.is_superuser:
+        #     user_type = 'admin'
+        # else:
+        #     user_type = request.POST['user_type']
+
+        # Create the user with the determined user_type and email as username
+        user = CustomUser.objects.create_user(
+            email=email,
+            username=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            adharno=adharno,
+            address=address,
+            dob=dob,
+            pin=pin,
+            state=state,
+            phone=phone,
+            user_type=user_type,
+        )
         return redirect('login')
+
     return render(request, 'signup.html')
 
 def logout_view(request):
@@ -149,3 +187,12 @@ def custom_password_set_confirm(request, uidb64, token):
         form = CustomPasswordResetForm(user)
     
     return render(request, 'registration/password_set_confirm.html', {'form': form, 'user': user})
+
+def home(request):
+    return render(request, 'index.html')
+
+def about(request):
+    return render(request, 'about.html')
+
+def contact(request):
+    return render(request, 'contact.html')
