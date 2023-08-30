@@ -75,7 +75,7 @@ class LawyerProfile(models.Model):
     specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS)
     start_date = models.DateField()  # Date profession started
     experience = models.IntegerField()  # Experience in years
-    profile_picture = models.ImageField(upload_to='lawyer_profiles/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='uploads/', blank=True, null=True)
     
     def calculate_experience(self):
         today = timezone.now().date()

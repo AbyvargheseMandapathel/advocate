@@ -16,6 +16,8 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
+from .models import LawyerProfile
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -225,7 +227,21 @@ def custom_password_set_confirm(request, uidb64, token):
     return render(request, 'registration/password_set_confirm.html', {'form': form, 'user': user})
 
 def home(request):
-    return render(request, 'index.html')
+    # Fetch the most recently added 3 lawyers from the database
+    lawyers = LawyerProfile.objects.all().order_by('-user__date_joined')[:3]
+
+    # Create a list to store lawyer names and specializations
+    lawyer_info = []
+
+    for lawyer in lawyers:
+        lawyer_info.append({
+            'name': f"{lawyer.user.first_name} {lawyer.user.last_name}",
+            'specialization': lawyer.specialization,
+            'profile_picture': lawyer.profile_picture.url,
+            
+        })
+
+    return render(request, 'index.html', {'lawyer_info': lawyer_info})
 
 def about(request):
     return render(request, 'about.html')

@@ -2,6 +2,8 @@
 from django.contrib import admin
 from django.urls import path, include 
 from accounts import views# Import the include function
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -12,3 +14,6 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),# Include the accounts app URLs
     # Add other URL patterns for your project
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
