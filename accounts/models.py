@@ -1,5 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
+import datetime
+
+
 
 class CustomUser(AbstractUser):
     USER_TYPES = (
@@ -58,6 +62,31 @@ class CustomUser(AbstractUser):
     # state = models.CharField(max_length=10, choices=STATES, default='kerala')  # Added: State field
     phone = models.CharField(max_length=15, default='')  # Added: Phone number field
 
+    
+class LawyerProfile(models.Model):
+    SPECIALIZATIONS = (
+        ('family', 'Family Lawyer'),
+        ('criminal', 'Criminal Lawyer'),
+        ('consumer', 'Consumer Lawyer'),
+        # Add more as needed
+    )
+    
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='lawyer_profile')
+    specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS)
+    start_date = models.DateField()  # Date profession started
+    experience = models.IntegerField()  # Experience in years
+    profile_picture = models.ImageField(upload_to='lawyer_profiles/', blank=True, null=True)
+    
+    def calculate_experience(self):
+        today = timezone.now().date()
+        experience = (today - self.start_date).days // 365
+        return experience
+    
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+
     def save(self, *args, **kwargs):
-        self.username = self.email
+        self.experience = self.calculate_experience()
         super().save(*args, **kwargs)
+        
+    

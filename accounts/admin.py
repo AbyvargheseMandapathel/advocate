@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, LawyerProfile
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
@@ -12,3 +12,4 @@ class CustomUserAdmin(UserAdmin):
 
 # Register the CustomUser model with the updated admin class
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(LawyerProfile)

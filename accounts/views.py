@@ -3,7 +3,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from .models import CustomUser
+from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
 from django.http import HttpResponseForbidden
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
@@ -15,9 +15,7 @@ from django.utils.http import urlsafe_base64_decode
 # from django.contrib.auth.forms import SetPasswordForm
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
-
-
-
+from datetime import datetime
 
 def login_view(request):
     if request.method == 'POST':
@@ -118,11 +116,49 @@ def add_lawyer(request):
         return HttpResponseForbidden("Access Denied")
 
     if request.method == 'POST':
-        username = request.POST['username']
+        # username = request.POST['username']
         email = request.POST['email']
+        # Save additional fields to LawyerProfile model
+        specialization = request.POST['specialization']
+        # start_date = request.POST['start_date']
+        start_date_str = request.POST['start_date']
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        # experience = request.POST['experience']
+        profile_picture = request.FILES.get('profile_picture')
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        adharno = request.POST['adharno']
+        address = request.POST['address']
+        dob = request.POST['dob']
+        pin = request.POST['pin']
+        state = request.POST['state']
+        phone = request.POST['phone']
 
-        user = CustomUser.objects.create_user(username=username, user_type='lawyer')
+        # Create a new user with user_type 'lawyer'
+        user = CustomUser.objects.create_user(
+            username=email, 
+            email=email, 
+            user_type='lawyer',
+            first_name = first_name,
+            last_name = last_name,
+            adharno = adharno,
+            address = address,
+            dob = dob,
+            pin = pin,
+            state = state,
+            phone   = phone,    
+            )
+
         
+
+        lawyer_profile = LawyerProfile.objects.create(
+            user=user,
+            specialization=specialization,
+            start_date=start_date,  # Use the converted start_date here
+            # experience=experience,
+            profile_picture=profile_picture
+        )
+
         # Generate a unique token for password reset
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
