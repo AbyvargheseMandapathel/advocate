@@ -12,4 +12,6 @@ class CustomUserAdmin(UserAdmin):
 
 # Register the CustomUser model with the updated admin class
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(LawyerProfile)
+@admin.register(LawyerProfile)
+class LawyerProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'specialization', 'experience', 'start_date', 'profile_picture')

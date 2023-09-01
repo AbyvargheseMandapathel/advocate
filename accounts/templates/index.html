@@ -124,23 +124,27 @@
                     </div>
             <div class="row">
                 {% for lawyer in lawyer_info %}
-        <div class="col-xl-4 col-md-6 col-lg-4">
-            <div class="single_loyers text-center">
-                <div class="thumb">
-                    <!-- <img src="{% static lawyer.profile_picture %}" alt=""> -->
-                    <img src="{{ MEDIA_URL }}{{ lawyer.profile_picture }}" alt="Uploaded Image">
+                <div class="col-xl-4 col-md-6 col-lg-4">
+                    <div class="single_loyers text-center">
+                        <div class="thumb">
+                                <img src="{{ MEDIA_URL }}{{ lawyer.profile_picture }}" alt="Uploaded Image">
+                            
+                        </div>
+                        
+                        <a href="{% url 'lawyer_details' lawyer.id %}"><h3>{{ lawyer.name }}</h3></a>
 
+                        
+                         
+
+                        <span>{{ lawyer.specialization }}</span>
+                        <div class="social_links">
+                            <ul>
+                                <!-- Add social media links here if needed -->
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <h3>{{ lawyer.name }}</h3>
-                <span>{{ lawyer.specialization }}</span>
-                <div class="social_links">
-                    <ul>
-                        <!-- Add social media links here if needed -->
-                    </ul>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
                 
                 <!--test-->
             </div>

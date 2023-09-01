@@ -1,0 +1,43 @@
+.lawyer-profile-pic img {
+    width: 15em;
+    height: 15em;
+    border-radius: 50% !important;
+    object-fit: cover;
+}
+
+.contact-btn-profile {
+    border: 2px solid #f2c64d;
+    background-color: transparent;
+    color: #f2c64d;
+    border-radius: 3px;
+    padding: 5px 30px;
+    cursor: pointer;
+    transition: 200ms;
+    user-select: none;
+}
+
+.contact-btn-profile:hover {
+    background-color: #f2c64d;
+    color: #fff;
+}
+
+@media screen and (max-width: 992px) {
+    .lawyer-profile-pic {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .lawyer-name-contact-btn {
+        flex-direction: column;
+        row-gap: 2em;
+    }
+
+    .lawyer-name-contact-btn h1 {
+        text-align: center;
+    }
+    
+    .contact-btn-profile {
+        max-width: 10em;
+    }
+}

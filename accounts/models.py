@@ -70,8 +70,11 @@ class LawyerProfile(models.Model):
         ('consumer', 'Consumer Lawyer'),
         # Add more as needed
     )
+    id = models.AutoField(primary_key=True)
+
     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='lawyer_profile')
+    # lawyer_id = models.AutoField(primary_key=True)
     specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS)
     start_date = models.DateField()  # Date profession started
     experience = models.IntegerField()  # Experience in years

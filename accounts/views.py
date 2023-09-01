@@ -1,7 +1,7 @@
 # accounts/views.py
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect ,get_object_or_404
 from django.urls import reverse
 from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
 from django.http import HttpResponseForbidden
@@ -17,6 +17,7 @@ from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from .models import LawyerProfile
+from django.views.generic import DetailView
 
 
 def login_view(request):
@@ -238,7 +239,7 @@ def home(request):
             'name': f"{lawyer.user.first_name} {lawyer.user.last_name}",
             'specialization': lawyer.specialization,
             'profile_picture': lawyer.profile_picture.url,
-            
+            'id': lawyer.id,  # Add lawyer's ID
         })
 
     return render(request, 'index.html', {'lawyer_info': lawyer_info})
@@ -248,3 +249,13 @@ def about(request):
 
 def contact(request):
     return render(request, 'contact.html')
+
+
+def lawyer_details(request, lawyer_id):
+    # Retrieve the lawyer's details from the database
+    lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
+
+    # Render a template with the lawyer's details
+    return render(request, 'lawyer/lawyer_details.html', {'lawyer': lawyer})
+
+
