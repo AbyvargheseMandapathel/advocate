@@ -1,0 +1,12 @@
+<!-- internship_detail.html -->
+<h1>{{ internship.name }}</h1>
+<h2>Lawyer Name: {{ internship.lawyer_profile.user.first_name }} {{ internship.lawyer_profile.user.last_name }}</h2>
+<p>Minimum CGPA: {{ internship.min_cgpa }}</p>
+<p>Start Date: {{ internship.start_date }}</p>
+<p>Duration: {{ internship.duration }}</p>
+<p>Description: {{ internship.description }}</p>
+
+<h3>Roles:</h3>
+<div class="roles">
+    {{ roles_html|safe }}
+</div>

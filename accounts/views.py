@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponseRedirect
 from django.urls import reverse
 from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden , HttpResponseNotFound
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -16,9 +16,10 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry
+from .models import LawyerProfile , ContactEntry , Internship
 from .forms import ContactForm , BookingForm
 from .models import Booking
+import markdown
 
 
 
@@ -100,23 +101,42 @@ def admin_dashboard(request):
     if request.user.user_type == 'admin':
         # Calculate the number of lawyers
         lawyer_count = LawyerProfile.objects.count()
+        booking_count = Booking.objects.count()
         
         # Retrieve the recent 5 bookings, ordered by pk in descending order (greatest to smallest)
         recent_bookings = Booking.objects.order_by('-pk')[:5]
+        recent_queries = ContactEntry.objects.order_by('-pk')[:5]
+        
+        context = {
+            'user': request.user,
+            'lawyer_count': lawyer_count,
+            'recent_bookings': recent_bookings,
+            'booking_count':booking_count,
+            'recent_queries': recent_queries
+            }
+            
         
         # Pass the count and recent bookings to the template
-        return render(request, 'admin/dashboard.html', {'user': request.user, 'lawyer_count': lawyer_count, 'recent_bookings': recent_bookings})
+        return render(request, 'admin/dashboard.html', context)
     else:
         return HttpResponseForbidden("Access Denied")
 
 def student_dashboard(request):
     if request.user.user_type == 'student':
-        return render(request, 'student/dashboard.html', {'user': request.user})
+        recent_internships = Internship.objects.order_by('-pk')[:5]
+        print(recent_internships)
+
+        
+        return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
     else:
         return HttpResponseForbidden("Access Denied")
 
+# def client_dashboard(request):
+#     return render(request, 'client/dashboard.html', {'user': request.user})
+
 def client_dashboard(request):
-    return render(request, 'client/dashboard.html', {'user': request.user})
+    # Call the home view and return its response
+    return home(request)
 
 def lawyer_dashboard(request):
     if request.user.user_type == 'lawyer':
@@ -284,7 +304,7 @@ def contact(request):
             contact_entry.save()
 
             # Redirect to a thank you page or the same page with a success message
-            return HttpResponseRedirect('/thank-you/')  # Redirect to a thank you page
+            return submit(request)
     else:
         form = ContactForm()
 
@@ -296,6 +316,9 @@ def error(request):
 
 def mail(request):
     return render(request, 'mail.html')
+
+def submit(request):
+    return render(request, 'submitted.html')
 
 def book(request):
     return render(request, 'book.html')
@@ -322,3 +345,16 @@ def book_lawyer(request, lawyer_id):
 def booking_details(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     return render(request, 'booking_details.html', {'booking': booking})
+
+
+
+def internship_detail(request, internship_id):
+    internship = Internship.objects.get(id=internship_id)
+    roles_html = markdown.markdown(internship.roles)
+    return render(request, 'student/internship_detail.html', {'internship': internship, 'roles_html': roles_html})
+
+
+
+
+
+

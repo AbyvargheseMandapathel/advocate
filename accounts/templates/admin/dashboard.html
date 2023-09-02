@@ -114,19 +114,33 @@
         <!-- dashboard top buttons start -->
         <div class="row">
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-gavel">{{ lawyer_count }}</i>
+                <i class="fa-solid fa-advocate">{{ lawyer_count }}</i>
                 <h6 style="padding: 0; margin: 0;">No of Lawyers</h6>
             </div>
 
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-hashtag">40</i>
+                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
                 <h6 style="padding: 0; margin: 0;">Total Bookings</h6>
+            </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
+                <h6 style="padding: 0; margin: 0;">No of Students</h6>
+            </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
+                <h6 style="padding: 0; margin: 0;">No of Internships</h6>
             </div>
 
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-user"></i>
                 <button>
-                    <h6 style="padding: 0; margin: 0;">See User List</h6>
+                    <h6 style="padding: 0; margin: 0;">Approve Student</h6>
+                </button>
+            </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa-user"></i>
+                <button>
+                    <h6 style="padding: 0; margin: 0;">Add Internships</h6>
                 </button>
             </div>
 
@@ -142,30 +156,20 @@
         <!-- dashboard messaged and appointments start -->
         <div class="row">
 
-            <!-- no of messages from contact us start -->
             <div class="col-md-6 mt-4 rounded position-relative contact-messages-bookings">
                 <h4><i class="fa-solid fa-message mr-3"></i>Contact Us</h4>
                 <br />
                 <div class="list-of-messages">
+                    {% for query in recent_queries %}
                     <p class="message-list rounded">
-                        <a href="#">Lorem ipsum dolor sit amet consectetur.</a>
+                        <a href="#">{{ query.message }}</a>
                     </p>
-                    <p class="message-list rounded">
-                        <a href="#">Lorem ipsum dolor sit amet consectetur.</a>
-                    </p>
-                    <p class="message-list rounded">
-                        <a href="#">Lorem ipsum dolor sit amet consectetur.</a>
-                    </p>
-                    <p class="message-list rounded">
-                        <a href="#">Lorem ipsum dolor sit amet consectetur.</a>
-                    </p>
-                    <p class="message-list rounded">
-                        <a href="#">Lorem ipsum dolor sit amet consectetur.</a>
-                    </p>
+                    {% endfor %}
                 </div>
-                <span class="show-more-link"><a href="#">show more</a></span>
+                <span class="show-more-link"><a href="#">Show More</a></span>
             </div>
             <!-- no of messages from contact us end -->
+            
 
             <!-- no of bookings start -->
             <!-- no of bookings start -->

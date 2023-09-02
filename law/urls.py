@@ -14,9 +14,14 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('error/', views.error, name='error'),
     path('book/', views.book, name='book'),
+    path('submit/', views.submit, name='submit'),
     # path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
     path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
     path('booking/<int:booking_id>/', views.booking_details, name='booking_details'),
+    path('internship/<int:internship_id>/', views.internship_detail, name='internship_detail'),
+
+    # path('students/internship/<str:lawyer_name>/', views.internship_detail, name='internship_detail')
+
 
     
     

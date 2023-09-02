@@ -1,0 +1,37 @@
+.internship-container {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.internship-container h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.internship-container p {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.internship-container .details-line {
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.internship-container .view-details-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.internship-container .view-details-button:hover {
+    background-color: #0056b3;
+}

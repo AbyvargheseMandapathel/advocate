@@ -113,5 +113,24 @@ class Booking(models.Model):
     def __str__(self):
         return self.user.email
     
-
+class Student(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
+    college = models.CharField(max_length=100)
+    current_cgpa = models.DecimalField(max_digits=3, decimal_places=2)
     
+
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
+    
+    
+class Internship(models.Model):
+    name = models.CharField(max_length=100)
+    lawyer_profile = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE, related_name='internships')
+    min_cgpa = models.DecimalField(max_digits=3, decimal_places=2)
+    start_date = models.DateField()
+    duration = models.CharField(max_length=50)
+    description = models.TextField()
+    roles = models.TextField(help_text="Enter roles as bullet points (one per line)")
+
+    def __str__(self):
+        return self.name
