@@ -65,9 +65,9 @@ class CustomUser(AbstractUser):
     
 class LawyerProfile(models.Model):
     SPECIALIZATIONS = (
-        ('family', 'Family Lawyer'),
-        ('criminal', 'Criminal Lawyer'),
-        ('consumer', 'Consumer Lawyer'),
+        ('family Lawyer', 'Family Lawyer'),
+        ('criminal Lawyer', 'Criminal Lawyer'),
+        ('consumer Lawyer', 'Consumer Lawyer'),
         # Add more as needed
     )
     id = models.AutoField(primary_key=True)
@@ -92,4 +92,14 @@ class LawyerProfile(models.Model):
         self.experience = self.calculate_experience()
         super().save(*args, **kwargs)
         
+        
+class ContactEntry(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=100)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
     

@@ -12,6 +12,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')), 
     path('accounts/', include('allauth.urls')),
+    path('error/', views.error, name='error'),
+    
+
     # path('lawyer/<int:lawyer_id>/', views.lawyer_details, name='lawyer_details'),
 
     # Add other URL patterns for your project

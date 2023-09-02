@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, LawyerProfile
+from .models import CustomUser, LawyerProfile , ContactEntry
 
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
@@ -15,3 +15,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 @admin.register(LawyerProfile)
 class LawyerProfileAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'specialization', 'experience', 'start_date', 'profile_picture')
+    
+admin.site.register(ContactEntry)
+
+

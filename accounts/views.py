@@ -1,7 +1,7 @@
 # accounts/views.py
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect ,get_object_or_404
+from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponseRedirect
 from django.urls import reverse
 from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
 from django.http import HttpResponseForbidden
@@ -17,7 +17,9 @@ from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from .models import LawyerProfile
-from django.views.generic import DetailView
+from .models import ContactEntry
+from .forms import ContactForm
+
 
 
 def login_view(request):
@@ -95,7 +97,11 @@ def dashboard_view(request):
     # accounts/views.py
 def admin_dashboard(request):
     if request.user.user_type == 'admin':
-        return render(request, 'admin/dashboard.html', {'user': request.user})
+        # Calculate the number of lawyers
+        lawyer_count = LawyerProfile.objects.count()
+        
+        # Pass the count to the template
+        return render(request, 'admin/dashboard.html', {'user': request.user, 'lawyer_count': lawyer_count})
     else:
         return HttpResponseForbidden("Access Denied")
 
@@ -188,7 +194,7 @@ def add_lawyer(request):
             html_message=message  # Use the custom HTML template
         )
 
-        return redirect('admin_dashboard')  # Redirect back to admin dashboard
+        return redirect('mail')  
     
     return render(request, 'admin/add_lawyer.html')
 
@@ -247,8 +253,10 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
-def contact(request):
-    return render(request, 'contact.html')
+# def contact(request):
+#     return render(request, 'contact.html')
+
+
 
 
 def lawyer_details(request, lawyer_id):
@@ -258,4 +266,29 @@ def lawyer_details(request, lawyer_id):
     # Render a template with the lawyer's details
     return render(request, 'lawyer/lawyer_details.html', {'lawyer': lawyer})
 
+def contact(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            # Save the form data to the database
+            contact_entry = ContactEntry(
+                name=form.cleaned_data['name'],
+                email=form.cleaned_data['email'],
+                subject=form.cleaned_data['subject'],
+                message=form.cleaned_data['message']
+            )
+            contact_entry.save()
 
+            # Redirect to a thank you page or the same page with a success message
+            return HttpResponseRedirect('/thank-you/')  # Redirect to a thank you page
+    else:
+        form = ContactForm()
+
+    return render(request, 'contact.html', {'form': form})
+
+
+def error(request):
+    return render(request, '404.html')
+
+def mail(request):
+    return render(request, 'mail.html')
