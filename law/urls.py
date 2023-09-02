@@ -13,6 +13,12 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')), 
     path('accounts/', include('allauth.urls')),
     path('error/', views.error, name='error'),
+    path('book/', views.book, name='book'),
+    # path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
+    path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
+    path('booking/<int:booking_id>/', views.booking_details, name='booking_details'),
+
+    
     
 
     # path('lawyer/<int:lawyer_id>/', views.lawyer_details, name='lawyer_details'),

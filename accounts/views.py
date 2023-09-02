@@ -16,9 +16,10 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile
-from .models import ContactEntry
-from .forms import ContactForm
+from .models import LawyerProfile , ContactEntry
+from .forms import ContactForm , BookingForm
+from .models import Booking
+
 
 
 
@@ -100,8 +101,11 @@ def admin_dashboard(request):
         # Calculate the number of lawyers
         lawyer_count = LawyerProfile.objects.count()
         
-        # Pass the count to the template
-        return render(request, 'admin/dashboard.html', {'user': request.user, 'lawyer_count': lawyer_count})
+        # Retrieve the recent 5 bookings, ordered by pk in descending order (greatest to smallest)
+        recent_bookings = Booking.objects.order_by('-pk')[:5]
+        
+        # Pass the count and recent bookings to the template
+        return render(request, 'admin/dashboard.html', {'user': request.user, 'lawyer_count': lawyer_count, 'recent_bookings': recent_bookings})
     else:
         return HttpResponseForbidden("Access Denied")
 
@@ -292,3 +296,29 @@ def error(request):
 
 def mail(request):
     return render(request, 'mail.html')
+
+def book(request):
+    return render(request, 'book.html')
+
+def book_lawyer(request, lawyer_id):
+    lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
+    
+    if request.method == 'POST':
+        form = BookingForm(request.POST)
+        
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.user = request.user  # Assign the booking to the logged-in user
+            booking.lawyer = lawyer
+            booking.save()
+            
+            # Redirect to a success page or display a success message
+            return redirect('home')
+    else:
+        form = BookingForm()
+
+    return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
+
+def booking_details(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    return render(request, 'booking_details.html', {'booking': booking})

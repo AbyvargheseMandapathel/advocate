@@ -103,3 +103,15 @@ class ContactEntry(models.Model):
     def __str__(self):
         return self.name
     
+class Booking(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
+    details = models.TextField()
+    # created_at = models.DateTimeField(auto_now_add=True)
+    # date_time = models.DateTimeField(null=False, blank=False)
+    
+    def __str__(self):
+        return self.user.email
+    
+
+    

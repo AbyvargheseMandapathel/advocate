@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details</title>
+</head>
+<body>
+    <h1>Booking Details</h1>
+    <p><strong>User:</strong> {{ booking.user.email }}</p>
+    <p><strong>Lawyer:</strong> {{ booking.lawyer.user.get_full_name }}</p>
+    <p><strong>Details:</strong> {{ booking.details }}</p>
+    <p><strong>Details:</strong> {{ booking.lawyer.user.phone }}</p>
+</body>
+</html>

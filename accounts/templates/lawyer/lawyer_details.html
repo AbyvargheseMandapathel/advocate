@@ -122,7 +122,7 @@
                 <!-- lawyer name and contact button -->
                 <div class="lawyer-name-contact-btn d-flex justify-content-between">
                     <h1 class="text-bold">{{ lawyer.user.get_full_name }}</h1>
-                    <button class="contact-btn-profile">Book</button>
+                    <a href="{% url 'book_lawyer' lawyer.id %}"><button class="contact-btn-profile">Book An Appointment</button></a>
                 </div>
 
                 <!-- details of lawyer -->
