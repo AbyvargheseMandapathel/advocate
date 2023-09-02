@@ -65,9 +65,9 @@ class CustomUser(AbstractUser):
     
 class LawyerProfile(models.Model):
     SPECIALIZATIONS = (
-        ('family Lawyer', 'Family Lawyer'),
-        ('criminal Lawyer', 'Criminal Lawyer'),
-        ('consumer Lawyer', 'Consumer Lawyer'),
+        ('family ', 'Family Lawyer'),
+        ('criminal ', 'Criminal Lawyer'),
+        ('consumer ', 'Consumer Lawyer'),
         # Add more as needed
     )
     id = models.AutoField(primary_key=True)
@@ -134,3 +134,13 @@ class Internship(models.Model):
 
     def __str__(self):
         return self.name
+    
+from django.db import models
+
+class Application(models.Model):
+    internship = models.ForeignKey(Internship, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    application_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.student.user.username} - {self.internship.name}'

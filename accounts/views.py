@@ -16,10 +16,12 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application
 from .forms import ContactForm , BookingForm
 from .models import Booking
 import markdown
+from django.contrib import messages
+
 
 
 
@@ -346,11 +348,21 @@ def booking_details(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     return render(request, 'booking_details.html', {'booking': booking})
 
-
-
 def internship_detail(request, internship_id):
-    internship = Internship.objects.get(id=internship_id)
+    internship = get_object_or_404(Internship, id=internship_id)
     roles_html = markdown.markdown(internship.roles)
+
+    if request.method == 'POST':
+        if request.user.user_type == 'student':
+            student = Student.objects.get(user=request.user)
+            application, created = Application.objects.get_or_create(internship=internship, student=student)
+            if created:
+                messages.success(request, 'Application submitted successfully.')
+            else:
+                messages.warning(request, 'You have already applied to this internship.')
+
+            return redirect('internship_detail', internship_id=internship_id)
+
     return render(request, 'student/internship_detail.html', {'internship': internship, 'roles_html': roles_html})
 
 

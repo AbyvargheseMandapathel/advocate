@@ -10,3 +10,8 @@
 <div class="roles">
     {{ roles_html|safe }}
 </div>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="apply-button">Apply</button>
+  </form>
+  
