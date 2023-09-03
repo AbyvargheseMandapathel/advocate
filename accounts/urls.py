@@ -21,6 +21,10 @@ urlpatterns = [
     path('set/<uidb64>/<token>/', views.custom_password_set_confirm, name='password_reset_confirm'),
     path('lawyer/<int:lawyer_id>/', views.lawyer_details, name='lawyer_details'),
     path('mail/', views.mail, name='mail'),
+    path('add_internship/', views.add_internship, name='add_internship'),
+    # path('approve_student/<int:student_id>/', views.approve_student, name='approve_student'),
+    path('approve_students/', views.approve_students, name='approve_students'),
+
     
     
 

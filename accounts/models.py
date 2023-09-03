@@ -117,6 +117,7 @@ class Student(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
     college = models.CharField(max_length=100)
     current_cgpa = models.DecimalField(max_digits=3, decimal_places=2)
+    is_approved = models.BooleanField(default=False)
     
 
     def __str__(self):
@@ -144,3 +145,6 @@ class Application(models.Model):
 
     def __str__(self):
         return f'{self.student.user.username} - {self.internship.name}'
+    
+# class StudentUser(CustomUser):
+#     is_approved = models.BooleanField(default=False)

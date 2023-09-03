@@ -16,9 +16,8 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  # Import your custom form class
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application
-from .forms import ContactForm , BookingForm
-from .models import Booking
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking 
+from .forms import ContactForm , BookingForm , InternshipForm
 import markdown
 from django.contrib import messages
 
@@ -364,6 +363,64 @@ def internship_detail(request, internship_id):
             return redirect('internship_detail', internship_id=internship_id)
 
     return render(request, 'student/internship_detail.html', {'internship': internship, 'roles_html': roles_html})
+
+
+def add_internship(request):
+    if request.method == 'POST':
+        form = InternshipForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')  # Redirect to the admin dashboard
+    else:
+        form = InternshipForm()
+
+    return render(request, 'admin/add_internship.html', {'form': form})
+
+
+def student_dashboard(request):
+    if request.user.user_type == 'student':
+        try:
+            # Check if the user is a student and if they are approved
+            student = Student.objects.get(user=request.user)
+            if student.is_approved:
+                recent_internships = Internship.objects.order_by('-pk')[:5]
+                return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
+            else:
+                # Display a message or a separate template for unapproved students
+                return render(request, 'student/not_approved.html')
+        except Student.DoesNotExist:
+            # User is a student but doesn't exist as a student in the database
+            pass
+
+    return HttpResponseForbidden("Access Denied")
+
+def approve_students(request):
+    # Check if the user is an admin
+    if not request.user.user_type == 'admin':
+        return HttpResponseForbidden("Access Denied")
+    
+    # Get a list of unapproved students
+    unapproved_students = Student.objects.filter(is_approved=False)
+    
+    if request.method == 'POST':
+        # Handle form submissions for approving/rejecting students
+        for student in unapproved_students:
+            student_id = str(student.id)
+            approve_key = 'approve_' + student_id
+            reject_key = 'reject_' + student_id
+            
+            if approve_key in request.POST:
+                # Approve the student
+                student.is_approved = True
+                student.save()
+            elif reject_key in request.POST:
+                # Reject the student (optional)
+                student.delete()
+    
+        # Redirect to the approve_students page after processing the submissions
+        return redirect('approve_students')
+    
+    return render(request, 'admin/approve_students.html', {'unapproved_students': unapproved_students})
 
 
 

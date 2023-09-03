@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, LawyerProfile , ContactEntry , Booking , Student, Internship, Application
+from .models import CustomUser, LawyerProfile , ContactEntry , Booking , Student, Internship, Application 
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -18,7 +18,23 @@ class LawyerProfileAdmin(admin.ModelAdmin):
 admin.site.register(ContactEntry)
 admin.site.register(Booking)
 admin.site.register(Student)
-admin.site.register(Internship)
 admin.site.register(Application)
+
+class InternshipAdmin(admin.ModelAdmin):
+    list_display = ('name', 'lawyer_profile', 'min_cgpa', 'start_date', 'duration')
+    list_filter = ('lawyer_profile',)
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Customize the form to include only lawyers with 5 or more years of experience
+        form = super().get_form(request, obj, **kwargs)
+
+        if form.base_fields.get('lawyer_profile'):
+            form.base_fields['lawyer_profile'].queryset = LawyerProfile.objects.filter(experience__gte=5)
+
+        return form
+
+# Register the Internship model with the custom admin class
+admin.site.register(Internship, InternshipAdmin)
+# admin.site.register(StudentUser)
 
 
