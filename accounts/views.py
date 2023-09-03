@@ -141,7 +141,15 @@ def client_dashboard(request):
 
 def lawyer_dashboard(request):
     if request.user.user_type == 'lawyer':
-        return render(request, 'lawyer/dashboard.html', {'user': request.user})
+        # Get the current lawyer's profile
+        lawyer_profile = LawyerProfile.objects.get(user=request.user)
+        bookings = Booking.objects.filter(lawyer=lawyer_profile).order_by('-pk')
+
+        
+        # Count the number of bookings for this lawyer
+        booking_count = Booking.objects.filter(lawyer=lawyer_profile).count()
+        
+        return render(request, 'lawyer/dashboard.html', {'user': request.user, 'booking_count': booking_count,'bookings': bookings})
     else:
         return HttpResponseForbidden("Access Denied")
     

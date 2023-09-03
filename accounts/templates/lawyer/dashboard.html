@@ -114,9 +114,10 @@
         <!-- dashboard top buttons start -->
         <div class="row">
             <div class="col-6 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-advocate">{{ lawyer_count }}</i>
+                <i class="fa-solid fa-advocate">{{ booking_count }}</i>
                 <h6 style="padding: 0; margin: 0;">No of Bookings</h6>
             </div>
+            
             <div class="col-6 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-user"></i>
                 <button>
@@ -125,46 +126,34 @@
             </div>
         </div>
         <!-- dashboard top buttons end -->
-
-        <!-- dashboard messaged and appointments start -->
-        <div class="row">
-
-            <div class="col-md-6 mt-4 rounded position-relative contact-messages-bookings">
-                <h4><i class="fa-solid fa-message mr-3"></i>Contact Us</h4>
-                <br />
-                <div class="list-of-messages">
-                    {% for query in recent_queries %}
-                    <p class="message-list rounded">
-                        <a href="#">{{ query.message }}</a>
-                    </p>
-                    {% endfor %}
-                </div>
-                <span class="show-more-link"><a href="#">Show More</a></span>
+        <div class="container mt-5">
+            <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for booking in bookings %}
+                    <tr>
+                      <td>{{ booking.user.email }}</td>
+                      <td>{{ booking.details }}</td>
+                      <td>
+                        <a href="{% url 'booking_details' booking.id %}" class="btn btn-primary">View Details</a>
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="3">No bookings available.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
-            <!-- no of messages from contact us end -->
-            
-
-            <!-- no of bookings start -->
-            <!-- no of bookings start -->
-<div class="col-md-6 mt-4 rounded position-relative contact-messages-bookings">
-    <h4><i class="fa-solid fa-calendar-check mr-3"></i>Recent Bookings</h4>
-    <br />
-    <div class="list-of-messages">
-        {% for booking in recent_bookings %}
-        <p class="message-list rounded">
-            <a href="{% url 'booking_details' booking.id %}">{{ booking.user.email }}</a>
-        </p>
-        {% endfor %}
-    </div>
-    <span class="show-more-link"><a href="#">show more</a></span>
-</div>
-<!-- no of bookings end -->
-
-            <!-- no of bookings end -->
-
-        </div>
-        <!-- dashboard messaged and appointments end -->
-    </div>
+          </div>
+        
 
 </body>
 
