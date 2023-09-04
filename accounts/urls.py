@@ -24,6 +24,7 @@ urlpatterns = [
     path('add_internship/', views.add_internship, name='add_internship'),
     # path('approve_student/<int:student_id>/', views.approve_student, name='approve_student'),
     path('approve_students/', views.approve_students, name='approve_students'),
+    path('student/save/', views.student_save, name='student_save'),
 
     
     

@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponseRedirect
 from django.urls import reverse
 from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
-from django.http import HttpResponseForbidden , HttpResponseNotFound
+from django.http import HttpResponseForbidden , HttpResponseNotFound , HttpResponse
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -27,7 +27,7 @@ from django.contrib import messages
 
 def login_view(request):
     if request.method == 'POST':
-        email = request.POST['email']  # Change this to 'email'
+        email = request.POST['email']  # Change thisbooking_countn to 'email'
         password = request.POST['password']
         user = authenticate(request, username=email, password=password)  # Use email for authentication
         if user is not None:
@@ -104,6 +104,7 @@ def admin_dashboard(request):
         lawyer_count = LawyerProfile.objects.count()
         booking_count = Booking.objects.count()
         
+        
         # Retrieve the recent 5 bookings, ordered by pk in descending order (greatest to smallest)
         recent_bookings = Booking.objects.order_by('-pk')[:5]
         recent_queries = ContactEntry.objects.order_by('-pk')[:5]
@@ -122,15 +123,15 @@ def admin_dashboard(request):
     else:
         return HttpResponseForbidden("Access Denied")
 
-def student_dashboard(request):
-    if request.user.user_type == 'student':
-        recent_internships = Internship.objects.order_by('-pk')[:5]
-        print(recent_internships)
+# def student_dashboard(request):
+#     if request.user.user_type == 'student':
+#         recent_internships = Internship.objects.order_by('-pk')[:5]
+#         print(recent_internships)
 
         
-        return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
-    else:
-        return HttpResponseForbidden("Access Denied")
+#         return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
+#     else:
+#         return HttpResponseForbidden("Access Denied")
 
 # def client_dashboard(request):
 #     return render(request, 'client/dashboard.html', {'user': request.user})
@@ -385,21 +386,48 @@ def add_internship(request):
     return render(request, 'admin/add_internship.html', {'form': form})
 
 
+# def student_dashboard(request):
+#     if request.user.user_type == 'student':
+#         try:
+#             # Check if the user is a student and if they are approved
+#             student = Student.objects.get(user=request.user)
+#             if student.is_approved:
+#                 recent_internships = Internship.objects.order_by('-pk')[:5]
+#                 return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
+#             else:
+#                 # Display a message or a separate template for unapproved students
+#                 return render(request, 'student/not_approved.html')
+#         except Student.DoesNotExist:
+#             # User is a student but doesn't exist as a student in the database
+#             pass
+
+#     return HttpResponseForbidden("Access Denied")
+
+
 def student_dashboard(request):
-    if request.user.user_type == 'student':
+    # Check if the user is logged in and is a student
+    if request.user.is_authenticated and request.user.user_type == 'student':
         try:
-            # Check if the user is a student and if they are approved
+            # Try to retrieve the student profile associated with the user
             student = Student.objects.get(user=request.user)
-            if student.is_approved:
+        except Student.DoesNotExist:
+            # If the student profile doesn't exist, render 'student_details.html'
+            return render(request, 'student/student_details.html')  # Render the details page template
+
+        if student.is_approved:
+            # Check if college and current CGPA fields are filled
+            if student.college and student.current_cgpa is not None:
                 recent_internships = Internship.objects.order_by('-pk')[:5]
                 return render(request, 'student/dashboard.html', {'user': request.user, 'recent_internships': recent_internships})
             else:
-                # Display a message or a separate template for unapproved students
-                return render(request, 'student/not_approved.html')
-        except Student.DoesNotExist:
-            # User is a student but doesn't exist as a student in the database
-            pass
+                # Redirect to 'student_details.html' if college or CGPA fields are not filled
+                return render(request, 'student/student_details.html')
 
+        else:
+            # Display a message or a separate template for unapproved students
+            return render(request, 'student/not_approved.html')
+
+    # If not a student or not logged in, return forbidden access
     return HttpResponseForbidden("Access Denied")
 
 def approve_students(request):
@@ -431,7 +459,21 @@ def approve_students(request):
     return render(request, 'admin/approve_students.html', {'unapproved_students': unapproved_students})
 
 
+def student_save(request):
+    if request.method == 'POST':
+        # Get the form data from the request
+        college = request.POST.get('college')
+        current_cgpa = request.POST.get('current_cgpa')
 
+        # Check if college and current_cgpa are not empty
+        if college and current_cgpa:
+            # Update or create the student profile for the user
+            Student.objects.update_or_create(user=request.user, defaults={'college': college, 'current_cgpa': current_cgpa})
 
-
+            # Redirect to a success page or the dashboard
+            return redirect('student_dashboard')  # Replace 'dashboard' with your dashboard URL name
+        else:
+            return HttpResponse("Please fill in all fields.")
+    else:
+        return render(request, 'student/student_details.html')
 
