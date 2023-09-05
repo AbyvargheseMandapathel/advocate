@@ -9,6 +9,11 @@ class CustomPasswordResetForm(SetPasswordForm):
         help_text="Enter the same password as above, for verification."
     )
     
+    
+# class LoginForm(forms.Form):
+#     email = forms.EmailField(widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Email address'}))
+#     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    
 class ContactForm(forms.Form):
     name = forms.CharField(max_length=100)
     email = forms.EmailField()

@@ -3,7 +3,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponseRedirect
 from django.urls import reverse
-from .models import CustomUser, LawyerProfile  # Import LawyerProfile model
+from .models import CustomUser, LawyerProfile  
 from django.http import HttpResponseForbidden , HttpResponseNotFound , HttpResponse
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
@@ -13,21 +13,29 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 # from django.contrib.auth.forms import SetPasswordForm
-from .forms import CustomPasswordResetForm  # Import your custom form class
+from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking 
 from .forms import ContactForm , BookingForm , InternshipForm
 import markdown
 from django.contrib import messages
-
-
-
+from django.contrib.auth.decorators import login_required
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        if request.user.user_type == 'admin':
+            return redirect(reverse('admin_dashboard'))
+        elif request.user.user_type == 'client':
+            return redirect(reverse('client_dashboard'))
+        elif request.user.user_type == 'lawyer':
+            return redirect(reverse('lawyer_dashboard'))
+        elif request.user.user_type == 'student':
+            return redirect(reverse('student_dashboard'))
+    
     if request.method == 'POST':
-        email = request.POST['email']  # Change thisbooking_countn to 'email'
+        email = request.POST['email']  # Change this to 'email'
         password = request.POST['password']
         user = authenticate(request, username=email, password=password)  # Use email for authentication
         if user is not None:
@@ -40,9 +48,21 @@ def login_view(request):
                 return redirect(reverse('lawyer_dashboard'))
             elif user.user_type == 'student':
                 return redirect(reverse('student_dashboard'))
+    
     return render(request, 'login.html')
 
 def signup_view(request):
+    if request.user.is_authenticated:
+        if request.user.user_type == 'admin':
+            return redirect(reverse('admin_dashboard'))
+        elif request.user.user_type == 'client':
+            return redirect(reverse('client_dashboard'))
+        elif request.user.user_type == 'lawyer':
+            return redirect(reverse('lawyer_dashboard'))
+        elif request.user.user_type == 'student':
+            return redirect(reverse('student_dashboard'))
+    
+    
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
@@ -97,7 +117,7 @@ def dashboard_view(request):
     else:
         return redirect('login')
     
-    # accounts/views.py
+@login_required
 def admin_dashboard(request):
     if request.user.user_type == 'admin':
         # Calculate the number of lawyers
@@ -135,11 +155,11 @@ def admin_dashboard(request):
 
 # def client_dashboard(request):
 #     return render(request, 'client/dashboard.html', {'user': request.user})
-
+@login_required
 def client_dashboard(request):
     # Call the home view and return its response
     return home(request)
-
+@login_required
 def lawyer_dashboard(request):
     if request.user.user_type == 'lawyer':
         # Get the current lawyer's profile
@@ -153,7 +173,7 @@ def lawyer_dashboard(request):
         return render(request, 'lawyer/dashboard.html', {'user': request.user, 'booking_count': booking_count,'bookings': bookings})
     else:
         return HttpResponseForbidden("Access Denied")
-    
+@login_required    
 def add_lawyer(request):
     if request.user.user_type != 'admin':
         return HttpResponseForbidden("Access Denied")
@@ -249,7 +269,7 @@ def add_lawyer(request):
     
 #     return render(request, 'registration/password_set_confirm.html', {'form': form, 'user': user})
 
-
+@login_required
 def custom_password_set_confirm(request, uidb64, token):
     user_id = urlsafe_base64_decode(uidb64)
     user = CustomUser.objects.get(pk=user_id)
@@ -320,19 +340,20 @@ def contact(request):
 
     return render(request, 'contact.html', {'form': form})
 
-
+@login_required
 def error(request):
     return render(request, '404.html')
-
+@login_required
 def mail(request):
     return render(request, 'mail.html')
-
+@login_required
 def submit(request):
     return render(request, 'submitted.html')
-
+@login_required
 def book(request):
     return render(request, 'book.html')
 
+@login_required
 def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
     
@@ -351,11 +372,12 @@ def book_lawyer(request, lawyer_id):
         form = BookingForm()
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
-
+@login_required
 def booking_details(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     return render(request, 'booking_details.html', {'booking': booking})
 
+@login_required
 def internship_detail(request, internship_id):
     internship = get_object_or_404(Internship, id=internship_id)
     roles_html = markdown.markdown(internship.roles)
@@ -373,7 +395,7 @@ def internship_detail(request, internship_id):
 
     return render(request, 'student/internship_detail.html', {'internship': internship, 'roles_html': roles_html})
 
-
+@login_required
 def add_internship(request):
     if request.method == 'POST':
         form = InternshipForm(request.POST)
@@ -403,7 +425,7 @@ def add_internship(request):
 
 #     return HttpResponseForbidden("Access Denied")
 
-
+@login_required
 def student_dashboard(request):
     # Check if the user is logged in and is a student
     if request.user.is_authenticated and request.user.user_type == 'student':
@@ -412,7 +434,7 @@ def student_dashboard(request):
             student = Student.objects.get(user=request.user)
         except Student.DoesNotExist:
             # If the student profile doesn't exist, render 'student_details.html'
-            return render(request, 'student/student_details.html')  # Render the details page template
+            return render(request, 'student/student_details.html')  
 
         if student.is_approved:
             # Check if college and current CGPA fields are filled
@@ -430,6 +452,7 @@ def student_dashboard(request):
     # If not a student or not logged in, return forbidden access
     return HttpResponseForbidden("Access Denied")
 
+@login_required
 def approve_students(request):
     # Check if the user is an admin
     if not request.user.user_type == 'admin':
@@ -458,7 +481,7 @@ def approve_students(request):
     
     return render(request, 'admin/approve_students.html', {'unapproved_students': unapproved_students})
 
-
+@login_required
 def student_save(request):
     if request.method == 'POST':
         # Get the form data from the request
