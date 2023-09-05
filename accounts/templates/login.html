@@ -58,6 +58,13 @@
                         </div>
                         <div class="text-center pt-2 mb-2 pb-1">
                           <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Log in</button>
+                          {% if messages %}
+                          <ul class="messages">
+                              {% for message in messages %}
+                              <p class="text-danger font-weight-bold{% if message.tags %} {{ message.tags }}{% endif %}">{{ message }}</p>
+                              {% endfor %}
+                          </ul>
+                          {% endif %}
                             <br>
                           <a class="text-muted" href="#!">Forgot password?</a>
                         </div>
@@ -82,27 +89,6 @@
         </div>
       </section>
 
-      <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const alertType = urlParams.get('alert');
-  
-        if (alertType === 'invalid_credentials') {
-            showAlert('Invalid Credentials', 'danger');
-
-  
-        function showAlert(message, alertType) {
-            const alertDiv = document.createElement('div');
-            alertDiv.classList.add('alert', `alert-${alertType}`, 'alert-top');
-            alertDiv.textContent = message;
-  
-            const container = document.querySelector('.container');
-            container.insertBefore(alertDiv, container.firstChild);
-  
-            setTimeout(function() {
-                alertDiv.remove();
-            }, 5000);  
-        } 
-      }
-      </script>
+      
 </body>
 </html>

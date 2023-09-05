@@ -21,6 +21,10 @@ from .forms import ContactForm , BookingForm , InternshipForm
 import markdown
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm  # Import AuthenticationForm
+from django.contrib import messages
+
+
 
 
 def login_view(request):
@@ -48,6 +52,9 @@ def login_view(request):
                 return redirect(reverse('lawyer_dashboard'))
             elif user.user_type == 'student':
                 return redirect(reverse('student_dashboard'))
+            
+        else:
+            messages.error(request, 'Invalid email or password. Please try again')
     
     return render(request, 'login.html')
 
@@ -61,11 +68,11 @@ def signup_view(request):
             return redirect(reverse('lawyer_dashboard'))
         elif request.user.user_type == 'student':
             return redirect(reverse('student_dashboard'))
-    
-    
+
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
+        confirm_password = request.POST['confirm_password']
         first_name = request.POST['first_name']
         last_name = request.POST['last_name']
         adharno = request.POST['adharno']
@@ -76,17 +83,28 @@ def signup_view(request):
         phone = request.POST['phone']
         user_type = request.POST['user_type']
 
-        
+        # Check if any field is empty
+        if not (email and password and first_name and last_name and adharno and address and dob and pin and state and phone and user_type):
+            messages.error(request, 'All fields are required')
+            return render(request, 'signup.html')
+
         # Check if the email is already in use
         if CustomUser.objects.filter(email=email).exists():
-            # You can customize this error message as needed
-            raise ValidationError('This email is already in use.')
+            messages.error(request, 'Email already exists.')
+            return render(request, 'signup.html')
 
-        # Check if the user creating the account is a superuser
-        # if request.user.is_superuser:
-        #     user_type = 'admin'
-        # else:
-        #     user_type = request.POST['user_type']
+        # Check if the Aadhar number is already in use
+        if CustomUser.objects.filter(adharno=adharno).exists():
+            messages.error(request, 'Aadhar number already exists')
+            return render(request, 'signup.html')
+
+        # Check if password meets the complexity requirements
+        # Add your password complexity validation here
+
+        # Check if password and confirm_password match
+        if password != confirm_password:
+            messages.error(request, 'Password and confirm password do not match.')
+            return render(request, 'signup.html')
 
         # Create the user with the determined user_type and email as username
         user = CustomUser.objects.create_user(

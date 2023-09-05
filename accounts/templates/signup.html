@@ -153,10 +153,17 @@
                           <div class="valid-feedback"></div>
                                     </div>
                                     <div class="mb-3">
-                                        <input type="password" class="form-control" id="confirmPassword" name="confirmpassword" placeholder="Confirm password" required onkeyup="validateConfirmPassword()">
+                                        <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirm password" required onkeyup="validateConfirmPassword()">
                                         <div class="invalid-feedback"></div>
-                          <div class="valid-feedback"></div>
+                                        <div class="valid-feedback"></div>
                                     </div>
+                                    {% if messages %}
+                          <ul class="messages">
+                              {% for message in messages %}
+                              <p class="text-danger font-weight-bold{% if message.tags %} {{ message.tags }}{% endif %}">{{ message }}</p>
+                              {% endfor %}
+                          </ul>
+                          {% endif %}
                                     <div class="text-center pt-2 mb-2 pb-1">
                                         <button class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit" onclick="return checkall()">Register</button>
                                     </div>
