@@ -126,7 +126,7 @@
                     <div>Start Date: {{ internship.start_date }}</div>
                     <div>Duration: {{ internship.duration }}</div>
                     <div class="d-flex">
-                        {{ roles_html|safe }}
+                        {{internship.roles}}
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
 
             <!-- description and apply button start -->
             <div class="col-12 mt-3">
-                <p>{{ internship.description }}</p>
+                <p>Roles :{{ roles_html|safe }}</p>
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn bg-warning text-white my-4 float-right">Apply</button>
