@@ -144,7 +144,7 @@ class Internship(models.Model):
     duration = models.CharField(max_length=50)
     description = models.TextField()
     roles = models.TextField(help_text="Enter roles as bullet points (one per line)")
-    image = models.ImageField(upload_to='internship_images/', blank=True, null=True)
+    image = models.ImageField(upload_to='internship_images/', blank=False, null=True)
 
 
     def __str__(self):

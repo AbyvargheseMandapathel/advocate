@@ -445,7 +445,7 @@ def internship_detail(request, internship_id):
 @login_required
 def add_internship(request):
     if request.method == 'POST':
-        form = InternshipForm(request.POST)
+        form = InternshipForm(request.POST, request.FILES)  # Include request.FILES here
         if form.is_valid():
             form.save()
             return redirect('admin_dashboard')  # Redirect to the admin dashboard
