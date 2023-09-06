@@ -79,6 +79,18 @@ class LawyerProfile(models.Model):
     start_date = models.DateField()  # Date profession started
     experience = models.IntegerField()  # Experience in years
     profile_picture = models.ImageField(upload_to='uploads/', blank=True, null=True)
+    bar_enrollment_number = models.CharField(max_length=50)  # Bar enrollment number
+    certificates = models.ManyToManyField('Certificate', blank=True)
+    
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} - {self.specialization}"
+    
+class Certificate(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='certificates/', blank=True, null=True)
+
+    def __str__(self):
+        return self.name
     
     def calculate_experience(self):
         today = timezone.now().date()
@@ -132,6 +144,8 @@ class Internship(models.Model):
     duration = models.CharField(max_length=50)
     description = models.TextField()
     roles = models.TextField(help_text="Enter roles as bullet points (one per line)")
+    image = models.ImageField(upload_to='internship_images/', blank=True, null=True)
+
 
     def __str__(self):
         return self.name

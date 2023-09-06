@@ -69,27 +69,33 @@
                             <div class="main-menu  d-none d-lg-block">
                                 <nav>
                                     <ul id="navigation">
-                                        <li><a class="active" href="{% url 'index' %}">home</a></li>
+                                        <li><a href="{% url 'home' %}">home</a></li>
                                         <li><a href="{% url 'about' %}">About</a></li>
                                         <li><a href="{% url 'contact' %}">Contact</a></li>
-                                        <li><a href="{% url 'practice' %}">Practice Area</a></li> 
+                                        <li><a class = "active" href="{% url 'practice' %}">Practice Area</a></li> 
                                         <li><a href="#">Services<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
-                                                <li><a href="{% url 'lawyer' %}">Lawyer</a></li>
-                                                <!-- <li><a href="{% url 'contact' %}">Case</a></li> -->
+                                                <li><a href="{% url 'lawyer_list' %}">Lawyer</a></li>
+                                                
+                                                {% if user.user_type == 'admin' %}
+                                                <li><a href="{% url 'add_lawyer' %}">Add Lawyer</a></li>
+                                                {% endif %}
                                             </ul>
+                                            
                                         </li>
                                         {% if user.is_authenticated %}
-                                        <li><a href="#">Welcome {{ user.first_name }}<i class="ti-angle-down"></i></a>
+                                        <li>
+                                            <a href="#">Welcome {{ user.first_name }}<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
+                                                {% if user.user_type == 'admin' %}
+                                                <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>                                                {% endif %}
                                                 <li><a href="{% url 'logout' %}">Logout</a></li>
                                             </ul>
                                         </li>
                                         {% else %}
-                                        <li><a href="{% url 'signup' %}">Welcome Guest</a></li>
+                                        
                                         <li><a href="{% url 'signup' %}">Signup</a></li>
                                         <li><a href="{% url 'login' %}">Login</a></li>
-                                        
                                         {% endif %}
                                     </ul>
                                 </nav>

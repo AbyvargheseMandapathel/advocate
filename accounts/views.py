@@ -172,6 +172,7 @@ def admin_dashboard(request):
 def client_dashboard(request):
     # Call the home view and return its response
     return home(request)
+
 @login_required
 def lawyer_dashboard(request):
     if request.user.user_type == 'lawyer':
@@ -324,13 +325,34 @@ def home(request):
             'id': lawyer.id,  # Add lawyer's ID
         })
 
+    
+
     return render(request, 'index.html', {'lawyer_info': lawyer_info})
+
+def practice(request):
+    return render(request, 'practice.html')
 
 def about(request):
     return render(request, 'about.html')
 
 def lawyer_list(request):
-    return render(request, 'lawyer_list.html')
+    # Fetch the most recently added 3 lawyers from the database
+    lawyers = LawyerProfile.objects.all().order_by('-user__date_joined')[:3]
+
+    # Create a list to store lawyer names and specializations
+    lawyer_info = []
+
+    for lawyer in lawyers:
+        lawyer_info.append({
+            'name': f"{lawyer.user.first_name} {lawyer.user.last_name}",
+            'specialization': lawyer.specialization,
+            'profile_picture': lawyer.profile_picture.url,
+            'id': lawyer.id,  # Add lawyer's ID
+        })
+
+    
+
+    return render(request, 'lawyer_list.html', {'lawyer_info': lawyer_info})
 
 # def contact(request):
 #     return render(request, 'contact.html')
@@ -505,8 +527,11 @@ def approve_students(request):
         return redirect('approve_students')
     
     return render(request, 'admin/approve_students.html', {'unapproved_students': unapproved_students})
-
 @login_required
+def is_admin_or_student(user):
+    return user.user_type in ['admin', 'student']
+
+
 def student_save(request):
     if request.method == 'POST':
         # Get the form data from the request

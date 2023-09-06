@@ -72,7 +72,7 @@
                                         <li><a class="active" href="{% url 'home' %}">home</a></li>
                                         <li><a href="{% url 'about' %}">About</a></li>
                                         <li><a href="{% url 'contact' %}">Contact</a></li>
-                                        <li><a href="{% url 'home' %}">Practice Area</a></li> 
+                                        <li><a href="{% url 'practice' %}">Practice Area</a></li> 
                                         <li><a href="#">Services<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
                                                 <li><a href="{% url 'lawyer_list' %}">Lawyer</a></li>
@@ -282,7 +282,6 @@
     </div>
     <!-- practice_area_end -->
 
-    <!-- our_loyers-start  -->
     <div class="our_loyers">
         <div class="container">
                 <div class="row">
@@ -294,54 +293,30 @@
                         </div>
                     </div>
             <div class="row">
+                {% for lawyer in lawyer_info %}
                 <div class="col-xl-4 col-md-6 col-lg-4">
                     <div class="single_loyers text-center">
                         <div class="thumb">
-                            <img src="{% static 'img/lawyers/1.png' %}" alt="">
+                                <img src="{{ MEDIA_URL }}{{ lawyer.profile_picture }}" alt="Uploaded Image">
+                            
                         </div>
-                        <h3>Henry Miller</h3>
-                        <span>Family Lawyer</span>
+                        
+                        <a href="{% url 'lawyer_details' lawyer.id %}"><h3>{{ lawyer.name }}</h3></a>
+
+                        
+                         
+
+                        <span>{{ lawyer.specialization }}</span>
                         <div class="social_links">
                             <ul>
-                                <!-- <li><a href="#"> <i class="fa fa-facebook"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-twitter"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-instagram"></i> </a></li> -->
+                                <!-- Add social media links here if needed -->
                             </ul>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-4 col-md-6 col-lg-4">
-                    <div class="single_loyers text-center">
-                        <div class="thumb">
-                            <img src="{% static 'img/lawyers/2.png' %}" alt="">
-                        </div>
-                        <h3>Jon Anderson</h3>
-                        <span>Consumer Lawyer</span>
-                        <div class="social_links">
-                            <ul>
-                                <!-- <li><a href="#"> <i class="fa fa-facebook"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-twitter"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-instagram"></i> </a></li> -->
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-md-6 col-lg-4">
-                    <div class="single_loyers text-center">
-                        <div class="thumb">
-                            <img src="{% static 'img/lawyers/3.png' %}" alt="">
-                        </div>
-                        <h3>Jaky Nadan</h3>
-                        <span>Criminal Lawyer</span>
-                        <div class="social_links">
-                            <ul>
-                                <!-- <li><a href="#"> <i class="fa fa-facebook"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-twitter"></i> </a></li>
-                                <li><a href="#"> <i class="fa fa-instagram"></i> </a></li> -->
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+            {% endfor %}
+                
+                <!--test-->
             </div>
         </div>
     </div>

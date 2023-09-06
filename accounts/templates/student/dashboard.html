@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    
 
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
@@ -23,7 +23,7 @@
 
     <!-- icons -->
     <script src="https://kit.fontawesome.com/bc4fa34d4c.js" crossorigin="anonymous"></script>
-
+    <title>Student Dashboard</title>
 </head>
 
 <body>
@@ -50,6 +50,51 @@
             #navigation li:last-child {
                 margin-right: 0; /* Remove margin from the last item to avoid extra spacing */
             }
+
+.card {
+    max-height: 25em;
+    cursor: pointer;
+}
+
+.card:hover {
+    box-shadow: 0 2px 10px #39353535;
+}
+
+.card:hover figure img {
+    transform: scale(1.1);
+}
+
+.view-details:active {
+    color: #ffc107;
+}
+
+.view-details:focus {
+    color: #000;
+}
+
+figure {
+    width: 100%;
+    height: 6.5em;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+figure img {
+    width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    transition: transform 200ms;
+}
+
+.card-details p{
+    margin: 3px 0 0 0;
+}
+
+@media screen and (max-width: 771px) {
+    figure {
+    height: 12em;
+} 
+}
         </style>
     <header>
         <div class="header-area ">
@@ -138,21 +183,36 @@
             </div>
         </div>
         <!-- dashboard top buttons end -->
-
-        {% for internship in recent_internships %}
-<div class="internship-container">
-    <h2>Name: {{ internship.name }}</h2>
-    <p>Lawyer Name: {{ internship.lawyer_profile.user.first_name }} {{ internship.lawyer_profile.user.last_name }}</p>
-    <p>Start Date: {{ internship.start_date }}</p>
-    <p>Duration: {{ internship.duration }}</p>
-    <!-- Add other details as needed -->
-    <button class="view-details-button"><a href="{% url 'internship_detail' internship.id %}">View Details</a></button>
-</div>
-{% endfor %}
-
-
         
+    <div class="row py-3" style="row-gap: 1.5em;">
+        {% for internship in recent_internships %}
+        <!-- card start -->
+        <div class="col-md-3">
+            <div class="card p-3" style="width: 100%;">
+
+                <figure>
+                    <img src="{{ internship.image.url }}"
+                        alt="picture">
+                </figure>
+
+                <div class="card-details">
+                    <h4>{{ internship.name }}</h4>
+                    <p>Lawyer: <span>{{ internship.lawyer_profile.user.first_name }} {{ internship.lawyer_profile.user.last_name }}</span></p>
+                    <p>Start Date: <span>{{ internship.start_date }}</span></p>
+                    <p>Duration: <span>{{ internship.duration }}</span></p>
+                </div>
+                <a href="{% url 'internship_detail' internship.id %}" class="btn btn-outline-warning view-details rounded" style="border-width: 2px;;">
+                    View
+                </a>
+            </div>
+        </div>
+        <!-- card end -->
+        {% endfor %}
+
     </div>
+
+</div>
+</div>
 
 </body>
 

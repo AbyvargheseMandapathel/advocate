@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('lawyerlist/', views.lawyer_list, name='lawyer_list'),
     path('about/', views.about, name='about'),
+     path('practice/', views.practice, name='practice'),
     path('contact/', views.contact, name='contact'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')), 
