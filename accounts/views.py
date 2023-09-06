@@ -98,15 +98,10 @@ def signup_view(request):
             messages.error(request, 'Aadhar number already exists')
             return render(request, 'signup.html')
 
-        # Check if password meets the complexity requirements
-        # Add your password complexity validation here
-
-        # Check if password and confirm_password match
         if password != confirm_password:
             messages.error(request, 'Password and confirm password do not match.')
             return render(request, 'signup.html')
 
-        # Create the user with the determined user_type and email as username
         user = CustomUser.objects.create_user(
             email=email,
             username=email,
@@ -159,7 +154,7 @@ def admin_dashboard(request):
         # Pass the count and recent bookings to the template
         return render(request, 'admin/dashboard.html', context)
     else:
-        return HttpResponseForbidden("Access Denied")
+        return render(request, '404.html')
 
 # def student_dashboard(request):
 #     if request.user.user_type == 'student':
@@ -190,11 +185,11 @@ def lawyer_dashboard(request):
         
         return render(request, 'lawyer/dashboard.html', {'user': request.user, 'booking_count': booking_count,'bookings': bookings})
     else:
-        return HttpResponseForbidden("Access Denied")
+        return render(request, '404.html')
 @login_required    
 def add_lawyer(request):
     if request.user.user_type != 'admin':
-        return HttpResponseForbidden("Access Denied")
+        return render(request, '404.html')
 
     if request.method == 'POST':
         # username = request.POST['username']
@@ -214,6 +209,15 @@ def add_lawyer(request):
         pin = request.POST['pin']
         state = request.POST['state']
         phone = request.POST['phone']
+        
+        if CustomUser.objects.filter(email=email).exists():
+            messages.error(request, 'Email already exists.')
+            return render(request, 'admin/add_lawyer.html')
+
+        # Check if the Aadhar number is already in use
+        if CustomUser.objects.filter(adharno=adharno).exists():
+            messages.error(request, 'Aadhar number already exists.')
+            return render(request, 'admin/add_lawyer.html')
 
         # Create a new user with user_type 'lawyer'
         user = CustomUser.objects.create_user(
@@ -287,7 +291,7 @@ def add_lawyer(request):
     
 #     return render(request, 'registration/password_set_confirm.html', {'form': form, 'user': user})
 
-@login_required
+
 def custom_password_set_confirm(request, uidb64, token):
     user_id = urlsafe_base64_decode(uidb64)
     user = CustomUser.objects.get(pk=user_id)
@@ -324,6 +328,9 @@ def home(request):
 
 def about(request):
     return render(request, 'about.html')
+
+def lawyer_list(request):
+    return render(request, 'lawyer_list.html')
 
 # def contact(request):
 #     return render(request, 'contact.html')
@@ -468,13 +475,13 @@ def student_dashboard(request):
             return render(request, 'student/not_approved.html')
 
     # If not a student or not logged in, return forbidden access
-    return HttpResponseForbidden("Access Denied")
+    return render(request, '404.html')
 
 @login_required
 def approve_students(request):
     # Check if the user is an admin
     if not request.user.user_type == 'admin':
-        return HttpResponseForbidden("Access Denied")
+        return render(request, '404.html')
     
     # Get a list of unapproved students
     unapproved_students = Student.objects.filter(is_approved=False)

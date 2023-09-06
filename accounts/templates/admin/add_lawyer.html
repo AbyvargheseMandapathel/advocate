@@ -224,7 +224,16 @@
                             <input type="file" name="profile_picture" accept=".jpg, .jpeg, .png" id="profile_picture"
                                 required />
                         </div>
+                        
                     </div>
+                    {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <p class="text-danger font-weight-bold{% if message.tags %} {{ message.tags }}{% endif %}">{{ message }}</p>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                   
 
                     <div class="profile-img-preview d-flex justify-content-center mt-2"></div>
 

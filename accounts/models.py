@@ -65,9 +65,9 @@ class CustomUser(AbstractUser):
     
 class LawyerProfile(models.Model):
     SPECIALIZATIONS = (
-        ('family ', 'Family Lawyer'),
-        ('criminal ', 'Criminal Lawyer'),
-        ('consumer ', 'Consumer Lawyer'),
+        ('family', 'Family Lawyer'),
+        ('criminal', 'Criminal Lawyer'),
+        ('consumer', 'Consumer Lawyer'),
         # Add more as needed
     )
     id = models.AutoField(primary_key=True)
