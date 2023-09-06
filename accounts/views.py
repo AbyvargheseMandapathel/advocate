@@ -136,6 +136,8 @@ def admin_dashboard(request):
         # Calculate the number of lawyers
         lawyer_count = LawyerProfile.objects.count()
         booking_count = Booking.objects.count()
+        internship_count = Internship.objects.count()
+        students_count = Student.objects.count()
         
         
         # Retrieve the recent 5 bookings, ordered by pk in descending order (greatest to smallest)
@@ -147,7 +149,9 @@ def admin_dashboard(request):
             'lawyer_count': lawyer_count,
             'recent_bookings': recent_bookings,
             'booking_count':booking_count,
-            'recent_queries': recent_queries
+            'recent_queries': recent_queries,
+            'internship_count': internship_count,
+            'students_count':students_count
             }
             
         

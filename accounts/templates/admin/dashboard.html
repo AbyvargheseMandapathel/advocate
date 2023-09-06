@@ -69,10 +69,10 @@
                                         <li><a class="active" href="{% url 'home' %}">home</a></li>
                                         <li><a href="{% url 'about' %}">About</a></li>
                                         <li><a href="{% url 'contact' %}">Contact</a></li>
-                                        <li><a href="{% url 'home' %}">Practice Area</a></li> 
+                                        <li><a href="{% url 'practice' %}">Practice Area</a></li> 
                                         <li><a href="#">Services<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
-                                                <li><a href="{% url 'lawyer_dashboard' %}">Lawyer</a></li>
+                                                <li><a href="{% url 'lawyer_list' %}">Lawyer</a></li>
                                                 
                                                 {% if user.user_type == 'admin' %}
                                                 <li><a href="{% url 'add_lawyer' %}">Add Lawyer</a></li>
@@ -119,15 +119,15 @@
             </div>
 
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
+                <i class="fa-solid fa-null">{{ booking_count }}</i>
                 <h6 style="padding: 0; margin: 0;">Total Bookings</h6>
             </div>
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
+                <i class="fa-solid fa-null">{{ students_count }}</i>
                 <h6 style="padding: 0; margin: 0;">No of Students</h6>
             </div>
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
-                <i class="fa-solid fa-null">{{ lawyer_count }}</i>
+                <i class="fa-solid fa-null">{{ internship_count }}</i>
                 <h6 style="padding: 0; margin: 0;">No of Internships</h6>
             </div>
 
