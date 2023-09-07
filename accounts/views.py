@@ -23,6 +23,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm  # Import AuthenticationForm
 from django.contrib import messages
+import re  
 
 
 
@@ -101,6 +102,48 @@ def signup_view(request):
         if password != confirm_password:
             messages.error(request, 'Password and confirm password do not match.')
             return render(request, 'signup.html')
+        
+        phone = phone.replace(" ", "")
+        adharno = adharno.replace(" ", "")
+        
+        # Check if the phone number exceeds 10 digits
+        if len(phone) > 10:
+            messages.error(request, 'Phone number cannot exceed 10 digits.')
+            return render(request, 'signup.html')
+        
+        # Check if the phone number starts with a digit between 6 and 9
+        if not re.match(r'^[6-9]\d{9}$', phone):
+            messages.error(request, 'Phone number must start with a digit between 6 and 9 and be 10 digits long.')
+            return render(request, 'signup.html')
+
+        # Check if the Aadhar number exceeds 12 digits
+        if len(adharno) != 12:
+            messages.error(request, 'Aadhar number must be exactly 12 digits.')
+            return render(request, 'signup.html')
+        
+        # Check if the password meets the complexity requirements
+        if not (len(password) >= 8 and
+                any(c.isdigit() for c in password) and
+                any(c.islower() for c in password) and
+                any(c.isupper() for c in password) and
+                any(c in "!@#$%^&*()-_+=<>?/\|{}[]:;" for c in password)):
+            messages.error(request, 'Password must be at least 8 characters long and include at least one digit, one lowercase letter, one uppercase letter, and one special character.')
+            return render(request, 'signup.html')
+
+        # Check if the user's age is equal or above 18
+        today = datetime.today()
+        birth_date = datetime.strptime(dob, "%Y-%m-%d")
+        age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+        if age < 18:
+            messages.error(request, 'You must be 18 years or older to sign up.')
+            return render(request, 'signup.html')
+        
+        # Check if first name and last name start with a digit
+        if re.match(r'^\d', first_name) or re.match(r'^\d', last_name):
+            messages.error(request, 'First name and last name cannot start with numbers.')
+            return render(request, 'signup.html')
+        
+        
 
         user = CustomUser.objects.create_user(
             email=email,
