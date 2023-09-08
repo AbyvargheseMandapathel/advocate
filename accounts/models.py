@@ -54,13 +54,13 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, default='')  # Change: Use email as the username
     first_name = models.CharField(max_length=30, default='')  # Added: First name field
     last_name = models.CharField(max_length=30, default='')  # Added: Last name field
-    adharno = models.CharField(max_length=12, unique=True, default='')  # Added: Adhar number field
-    address = models.TextField(default='')  # Added: Address field
-    dob = models.DateField(default='2000-01-01')  # Added: Date of birth field
-    pin = models.CharField(max_length=6, default='')  # Added: PIN code field
-    state = models.CharField(max_length=50, choices=STATES, blank=False, null=False)
+    # adharno = models.CharField(max_length=12,  blank=True,unique=True)  # Added: Adhar number field
+    address = models.TextField(default='',blank=True,)  # Added: Address field
+    dob = models.DateField(default='2000-01-01',blank=True,)  # Added: Date of birth field
+    pin = models.CharField(max_length=6, default='',blank=True,)  # Added: PIN code field
+    state = models.CharField(max_length=50, choices=STATES, blank=True, null=False)
     # state = models.CharField(max_length=10, choices=STATES, default='kerala')  # Added: State field
-    phone = models.CharField(max_length=15, default='')  # Added: Phone number field
+    phone = models.CharField(max_length=15,blank=True, unique=True)  # Added: Phone number field
 
     
 class LawyerProfile(models.Model):
@@ -75,20 +75,36 @@ class LawyerProfile(models.Model):
     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='lawyer_profile')
     # lawyer_id = models.AutoField(primary_key=True)
-    specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS)
-    start_date = models.DateField()  # Date profession started
-    experience = models.IntegerField()  # Experience in years
+    specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS,blank=True)
+    start_date = models.DateField(null=True)  # Date profession started
+    experience = models.IntegerField(blank=True)  # Experience in years
     profile_picture = models.ImageField(upload_to='uploads/', blank=True, null=True)
-    bar_enrollment_number = models.CharField(max_length=50)  # Bar enrollment number
+    # bar_enrollment_number = models.CharField(max_length=50,blank=True)  # Bar enrollment number
     certificates = models.ManyToManyField('Certificate', blank=True)
+    license_no = models.CharField(max_length=30,blank=False)
+    working_days = models.ManyToManyField('Day', blank=True)
+    working_time_start = models.TimeField(null=True, blank=True)
+    working_time_end = models.TimeField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.specialization}"
     
     
+    
+    
+    # def calculate_experience(self):
+    #     today = timezone.now().date()
+    #     experience = (today - self.start_date).days // 365
+    #     return experience
+    
     def calculate_experience(self):
         today = timezone.now().date()
-        experience = (today - self.start_date).days // 365
+
+        if self.start_date:
+            experience = (today - self.start_date).days // 365
+        else:
+            experience = 0
+
         return experience
     
     def __str__(self):
@@ -104,7 +120,12 @@ class Certificate(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+class Day(models.Model):
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name    
     
         
         
