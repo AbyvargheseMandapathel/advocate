@@ -64,6 +64,14 @@ class CustomUser(AbstractUser):
     state = models.CharField(max_length=50, choices=STATES, blank=True, null=False)
     # state = models.CharField(max_length=10, choices=STATES, default='kerala')  # Added: State field
     phone = models.CharField(max_length=15,blank=True, unique=True)  # Added: Phone number field
+    
+class TimeSlot(models.Model):
+    start_time = models.TimeField()
+    # end_time = models.TimeField()
+    
+    def __str__(self):
+        # return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
+        return f"{self.start_time.strftime('%I:%M %p')} "
 
     
 class LawyerProfile(models.Model):
@@ -86,8 +94,10 @@ class LawyerProfile(models.Model):
     certificates = models.ManyToManyField('Certificate', blank=True)
     license_no = models.CharField(max_length=30,blank=False)
     working_days = models.ManyToManyField('Day', blank=True)
-    working_time_start = models.TimeField(null=True, blank=True)
-    working_time_end = models.TimeField(null=True, blank=True)
+    working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')
+    working_time_end = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_end_time')
+    # working_time_start = models.TimeField(null=True, blank=True)
+    # working_time_end = models.TimeField(null=True, blank=True)
     # working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')
     # working_time_end = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_end_time')
 
@@ -154,12 +164,7 @@ class ContactEntry(models.Model):
     def __str__(self):
         return self.name
     
-class TimeSlot(models.Model):
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    
-    def __str__(self):
-        return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
+
     
     
 class Booking(models.Model):

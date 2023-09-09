@@ -26,6 +26,10 @@ from django.contrib import messages
 import re  
 import csv
 import os
+from django.utils import timezone
+import pytz  # Import pytz module
+
+
 
 
 
@@ -466,26 +470,30 @@ def book(request):
 @login_required
 def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
-    
+
+    # Calculate the current time in the Indian timezone
+    # current_time = timezone.now().astimezone(pytz.timezone('Asia/Kolkata'))  # Use pytz here
+    #
+
     if request.method == 'POST':
-        form = BookingForm(request.POST, lawyer=lawyer)  # Pass lawyer as an argument
-        
+        form = BookingForm(request.POST, lawyer=lawyer)
+
         if form.is_valid():
             booking = form.save(commit=False)
             booking.user = request.user
             booking.lawyer = lawyer
             booking.status = 'pending'
-            
-            # Assign the selected TimeSlot instance to the booking
-            selected_time_slot = form.cleaned_data['time_slot']
-            booking.time_slot = selected_time_slot
-            
+            available_time_slots = TimeSlot.objects.filter()
+
             booking.save()
-            
+
             # Redirect to a success page or display a success message
             return redirect('home')
     else:
-        form = BookingForm(lawyer=lawyer)  # Pass lawyer as an argument
+        # Query available time slots based on the current time
+        
+
+        form = BookingForm(lawyer=lawyer, time_slots=available_time_slots)
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
@@ -675,6 +683,8 @@ def lawyer_save(request):
     if request.user.user_type != 'lawyer':
         return render(request, '404.html')
 
+    available_time_slots = TimeSlot.objects.all()
+
     if request.method == 'POST':
         specialization = request.POST['specialization']
         start_date_str = request.POST['start_date']
@@ -685,9 +695,9 @@ def lawyer_save(request):
         pin = request.POST['pin']
         state = request.POST['state']
         phone = request.POST['phone']
-        working_day_values = request.POST.getlist('working_days')  # Get a list of selected day values
-        working_time_start = request.POST['working_time_start']
-        working_time_end = request.POST['working_time_end']
+        working_day_values = request.POST.getlist('working_days')
+        working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
+        working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
 
         if not all([specialization, start_date_str, profile_picture, address, dob, pin, state, phone]):
             return HttpResponse("Please fill in all fields.")
@@ -713,6 +723,10 @@ def lawyer_save(request):
             day, created = Day.objects.get_or_create(name=day_value)
             lawyer_profile.working_days.add(day)
 
+        # Retrieve the selected TimeSlot instances based on their IDs
+        working_time_start = get_object_or_404(TimeSlot, id=working_time_start_id)
+        working_time_end = get_object_or_404(TimeSlot, id=working_time_end_id)
+
         lawyer_profile.working_time_start = working_time_start
         lawyer_profile.working_time_end = working_time_end
         lawyer_profile.save()
@@ -720,7 +734,7 @@ def lawyer_save(request):
         # Redirect to a success page or the dashboard
         return redirect('lawyer_dashboard')
     else:
-        return render(request, 'lawyer/user_details_form.html')
+        return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
 
 
 

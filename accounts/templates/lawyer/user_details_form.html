@@ -92,10 +92,22 @@
     <br><br>
 
     <label for="working_time_start">Working Time Start:</label>
-    <input type="time" id="working_time_start" name="working_time_start" required><br><br>
-
+    <select id="working_time_start" name="working_time_start" required>
+        <option value="" disabled selected>Select Start Time</option>
+        {% for time_slot in available_time_slots %}
+            <option value="{{ time_slot.id }}">{{ time_slot }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
+    
     <label for="working_time_end">Working Time End:</label>
-    <input type="time" id="working_time_end" name="working_time_end" required><br><br>
+    <select id="working_time_end" name="working_time_end" required>
+        <option value="" disabled selected>Select End Time</option>
+        {% for time_slot in available_time_slots %}
+            <option value="{{ time_slot.id }}">{{ time_slot }}</option>
+        {% endfor %}
+    </select>
+    <br><br>
 
     <input type="submit" value="Create Profile">
 </form> 
