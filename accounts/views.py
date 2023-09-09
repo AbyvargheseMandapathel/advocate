@@ -16,7 +16,7 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot
 from .forms import ContactForm , BookingForm , InternshipForm
 import markdown
 from django.contrib import messages
@@ -474,7 +474,10 @@ def book_lawyer(request, lawyer_id):
             booking = form.save(commit=False)
             booking.user = request.user  # Assign the booking to the logged-in user
             booking.lawyer = lawyer
+            booking.status = 'pending'  # Set the status to pending, or you can set it as per your logic
             booking.save()
+        
+        
             
             # Redirect to a success page or display a success message
             return redirect('home')
@@ -482,6 +485,7 @@ def book_lawyer(request, lawyer_id):
         form = BookingForm()
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
+
 @login_required
 def booking_details(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)

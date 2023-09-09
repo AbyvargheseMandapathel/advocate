@@ -176,13 +176,7 @@
 <div class="col-md-6 mt-4 rounded position-relative contact-messages-bookings">
     <h4><i class="fa-solid fa-calendar-check mr-3"></i>Recent Bookings</h4>
     <br />
-    <div class="list-of-messages">
-        {% for booking in recent_bookings %}
-        <p class="message-list rounded">
-            <a href="{% url 'booking_details' booking.id %}">{{ booking.user.email }}</a>
-        </p>
-        {% endfor %}
-    </div>
+    
     <span class="show-more-link"><a href="#">show more</a></span>
 </div>
 <!-- no of bookings end -->

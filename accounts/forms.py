@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
-from .models import Booking ,Internship ,LawyerProfile
+from .models import Booking ,Internship ,LawyerProfile, TimeSlot
 
 class CustomPasswordResetForm(SetPasswordForm):
     new_password2 = forms.CharField(
@@ -23,7 +23,37 @@ class ContactForm(forms.Form):
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
-        fields = ['details']
+        fields = ['details', 'booking_date', 'time_slot']
+
+    booking_date = forms.DateField(widget=forms.SelectDateWidget)
+    time_slot = forms.ChoiceField(choices=[])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Get the lawyer associated with this booking, if available
+        lawyer = self.initial.get('lawyer')
+        
+        if lawyer:
+            # Debugging: Print lawyer's working hours to check the values
+            print(f"Lawyer Working Hours - Start: {lawyer.working_time_start}, End: {lawyer.working_time_end}")
+            
+            # Filter time slots based on lawyer's working hours
+            available_time_slots = TimeSlot.objects.filter(
+                start_time__gte=lawyer.working_time_start,
+                end_time__lte=lawyer.working_time_end
+            )
+            
+            # Debugging: Print the available time slots to check if they are filtered correctly
+            print("Available Time Slots:")
+            for ts in available_time_slots:
+                print(f"{ts.start_time} - {ts.end_time}")
+            
+            # Create choices for the time slot field
+            time_slot_choices = [(ts.pk, f'{ts.start_time} - {ts.end_time}') for ts in available_time_slots]
+            self.fields['time_slot'].choices = time_slot_choices
+            
+            
         
 class InternshipForm(forms.ModelForm):
     class Meta:

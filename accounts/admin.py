@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, LawyerProfile , ContactEntry , Booking , Student, Internship, Application 
+from .models import CustomUser, LawyerProfile , ContactEntry , Booking , Student, Internship, Application ,TimeSlot
 class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
@@ -19,6 +19,7 @@ admin.site.register(ContactEntry)
 admin.site.register(Booking)
 admin.site.register(Student)
 admin.site.register(Application)
+admin.site.register(TimeSlot)
 
 class InternshipAdmin(admin.ModelAdmin):
     list_display = ('name', 'lawyer_profile', 'min_cgpa', 'start_date', 'duration')

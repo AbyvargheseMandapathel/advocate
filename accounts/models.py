@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 import datetime
+from datetime import datetime, timedelta
+
 
 
 
@@ -107,6 +109,15 @@ class LawyerProfile(models.Model):
 
         return experience
     
+    def is_available(self,date , time_slot):
+        bookings_for_date = Booking.objects.filter(
+            lawyer= self,
+            booking_date = date,
+            time_slot = time_slot,
+            status = 'confirmed'
+        )
+        return not bookings_for_date.exists()
+    
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
 
@@ -139,10 +150,24 @@ class ContactEntry(models.Model):
     def __str__(self):
         return self.name
     
+class TimeSlot(models.Model):
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    
+    def __str__(self):
+        return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
+    
+    
 class Booking(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
     details = models.TextField()
+    booking_date = models.DateField()
+    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20 , default = "pending")
+    
+    def is_confirmed(self):
+        return self.status =="confirmed"
     # created_at = models.DateTimeField(auto_now_add=True)
     # date_time = models.DateTimeField(null=False, blank=False)
     
