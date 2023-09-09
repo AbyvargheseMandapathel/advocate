@@ -30,12 +30,13 @@ class BookingForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         lawyer = kwargs.pop('lawyer', None)
-        available_time_slots = kwargs.pop('available_time_slots', None)
-        
         super().__init__(*args, **kwargs)
-
-        if lawyer and available_time_slots:
-            print("Available Time Slots:", available_time_slots)  # Debugging statement
+        
+        if lawyer:
+            available_time_slots = TimeSlot.objects.filter(
+                start_time__gte=lawyer.working_time_start.start_time,
+                # end_time__lte=lawyer.working_time_end.end_time
+            )
             self.fields['time_slot'].queryset = available_time_slots
 
 

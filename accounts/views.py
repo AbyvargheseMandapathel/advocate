@@ -470,30 +470,26 @@ def book(request):
 @login_required
 def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
-
-    # Calculate the current time in the Indian timezone
-    # current_time = timezone.now().astimezone(pytz.timezone('Asia/Kolkata'))  # Use pytz here
-    #
-
+    
     if request.method == 'POST':
-        form = BookingForm(request.POST, lawyer=lawyer)
-
+        form = BookingForm(request.POST, lawyer=lawyer)  # Pass lawyer as an argument
+        
         if form.is_valid():
             booking = form.save(commit=False)
             booking.user = request.user
             booking.lawyer = lawyer
             booking.status = 'pending'
-            available_time_slots = TimeSlot.objects.filter()
-
+            
+            # Assign the selected TimeSlot instance to the booking
+            selected_time_slot = form.cleaned_data['time_slot']
+            booking.time_slot = selected_time_slot
+            
             booking.save()
-
+            
             # Redirect to a success page or display a success message
             return redirect('home')
     else:
-        # Query available time slots based on the current time
-        
-
-        form = BookingForm(lawyer=lawyer, time_slots=available_time_slots)
+        form = BookingForm(lawyer=lawyer)  # Pass lawyer as an argument
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
