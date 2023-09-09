@@ -468,21 +468,24 @@ def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
     
     if request.method == 'POST':
-        form = BookingForm(request.POST)
+        form = BookingForm(request.POST, lawyer=lawyer)  # Pass lawyer as an argument
         
         if form.is_valid():
             booking = form.save(commit=False)
-            booking.user = request.user  # Assign the booking to the logged-in user
+            booking.user = request.user
             booking.lawyer = lawyer
-            booking.status = 'pending'  # Set the status to pending, or you can set it as per your logic
+            booking.status = 'pending'
+            
+            # Assign the selected TimeSlot instance to the booking
+            selected_time_slot = form.cleaned_data['time_slot']
+            booking.time_slot = selected_time_slot
+            
             booking.save()
-        
-        
             
             # Redirect to a success page or display a success message
             return redirect('home')
     else:
-        form = BookingForm()
+        form = BookingForm(lawyer=lawyer)  # Pass lawyer as an argument
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 

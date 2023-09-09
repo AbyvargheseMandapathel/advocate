@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 
 
+
 class CustomUser(AbstractUser):
     USER_TYPES = (
         ('admin', 'Admin'),
@@ -87,6 +88,9 @@ class LawyerProfile(models.Model):
     working_days = models.ManyToManyField('Day', blank=True)
     working_time_start = models.TimeField(null=True, blank=True)
     working_time_end = models.TimeField(null=True, blank=True)
+    # working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')
+    # working_time_end = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_end_time')
+
     
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.specialization}"
