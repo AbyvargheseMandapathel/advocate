@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
 from .models import Booking ,Internship ,LawyerProfile, TimeSlot
+from datetime import timedelta
 
 class CustomPasswordResetForm(SetPasswordForm):
     new_password2 = forms.CharField(

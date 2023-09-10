@@ -484,10 +484,19 @@ def book_lawyer(request, lawyer_id):
             selected_time_slot = form.cleaned_data['time_slot']
             booking.time_slot = selected_time_slot
             
-            booking.save()
+            # Check if the selected time slot is already booked on the same date for this lawyer
+            existing_booking = Booking.objects.filter(
+                lawyer=lawyer,
+                booking_date=booking.booking_date,
+                time_slot=selected_time_slot,
+            ).exclude(status='canceled').first()
             
-            # Redirect to a success page or display a success message
-            return redirect('home')
+            if existing_booking:
+                messages.error(request, 'This time slot is already booked by another user.')
+            else:
+                booking.save()
+                # Redirect to a success page or display a success message
+                return redirect('home')
     else:
         form = BookingForm(lawyer=lawyer)  # Pass lawyer as an argument
 
