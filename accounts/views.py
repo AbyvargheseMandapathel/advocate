@@ -16,8 +16,8 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot
-from .forms import ContactForm , BookingForm , InternshipForm
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff
+from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm
 import markdown
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -230,8 +230,25 @@ def admin_dashboard(request):
 #     return render(request, 'client/dashboard.html', {'user': request.user})
 @login_required
 def client_dashboard(request):
-    # Call the home view and return its response
-    return home(request)
+    user = request.user
+
+    # Get all bookings by the client
+    all_bookings = Booking.objects.filter(user=user)
+
+    # Filter bookings by status
+    confirmed_bookings = all_bookings.filter(status='confirmed')
+    pending_bookings = all_bookings.filter(status='pending')
+    canceled_bookings = all_bookings.filter(status='canceled')
+    rescheduled_bookings = all_bookings.filter(status='reschedule')
+
+    context = {
+        'confirmed_bookings': confirmed_bookings,
+        'pending_bookings': pending_bookings,
+        'canceled_bookings': canceled_bookings,
+        'rescheduled_bookings':rescheduled_bookings
+    }
+
+    return render(request, 'client/dashboard.html', context)
 
 @login_required
 def lawyer_dashboard(request):
@@ -478,53 +495,168 @@ def book_lawyer(request, lawyer_id):
         form = BookingForm(request.POST, lawyer=lawyer)
 
         if form.is_valid():
-            # Check if the selected day (an integer) falls within the lawyer's working days
-            selected_day = form.cleaned_data['booking_date'].weekday() + 1  # Get the day as an integer (1 for Monday, 2 for Tuesday, etc.)
+            booking_date = form.cleaned_data['booking_date']
+            selected_day = booking_date.weekday() + 1
 
-            # Check if the selected day exists in the lawyer's working days
             if not lawyer.working_days.filter(name=selected_day).exists():
                 messages.error(request, 'This lawyer does not work on the selected day.')
             else:
-                # Continue with booking logic
-                booking = form.save(commit=False)
-                booking.user = user
-                booking.lawyer = lawyer
-                booking.status = 'pending'
-                
-                # Assign the selected TimeSlot instance to the booking
-                selected_time_slot = form.cleaned_data['time_slot']
-                booking.time_slot = selected_time_slot
-                
-                # Check for existing bookings and user's existing bookings (as previously implemented)
-                existing_booking = Booking.objects.filter(
-                    lawyer=lawyer,
-                    booking_date=booking.booking_date,
-                    time_slot=selected_time_slot,
-                ).exclude(status='canceled').first()
-
-                user_existing_booking = Booking.objects.filter(
-                    user=user,
-                    booking_date=booking.booking_date,
-                    time_slot=selected_time_slot,
-                ).exclude(status='canceled').first()
-
-                if existing_booking:
-                    messages.error(request, 'This time slot is already booked by another user.')
-                elif user_existing_booking:
-                    messages.error(request, 'You have already booked a lawyer at this time slot.')
+                # Check if the selected date is marked as a day off for the lawyer
+                if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
+                    messages.error(request, 'This date is marked as a day off for the lawyer.')
                 else:
-                    booking.save()
-                    # Redirect to a success page or display a success message
-                    return redirect('home')
+                    # Continue with booking logic
+                    booking = form.save(commit=False)
+                    booking.user = user
+                    booking.lawyer = lawyer
+                    booking.status = 'pending'
+                    
+                    # Assign the selected TimeSlot instance to the booking
+                    selected_time_slot = form.cleaned_data['time_slot']
+                    booking.time_slot = selected_time_slot
+                    
+                    # Check for existing bookings and user's existing bookings (as previously implemented)
+                    existing_booking = Booking.objects.filter(
+                        lawyer=lawyer,
+                        booking_date=booking.booking_date,
+                        time_slot=selected_time_slot,
+                    ).exclude(status='canceled').first()
+
+                    user_existing_booking = Booking.objects.filter(
+                        user=user,
+                        booking_date=booking.booking_date,
+                        time_slot=selected_time_slot,
+                    ).exclude(status='canceled').first()
+
+                    if existing_booking:
+                        messages.error(request, 'This time slot is already booked by another user.')
+                    elif user_existing_booking:
+                        messages.error(request, 'You have already booked a lawyer at this time slot.')
+                    else:
+                        booking.save()
+                        # Redirect to a success page or display a success message
+                        return redirect('home')
     else:
         form = BookingForm(lawyer=lawyer)
 
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
+# def reschedule_appointment(request, booking_id):
+#     # Get the booking object for the provided booking_id
+#     booking = get_object_or_404(Booking, pk=booking_id)
+#     user = request.user
+
+#     # Check if the user making the request is the owner of the booking (client)
+#     if user != booking.user:
+#         # Customize this part to handle unauthorized access, e.g., show an error message or redirect to an error page
+#         return render(request, 'access_denied.html')
+
+#     if request.method == 'POST':
+#         # If the form is submitted, process the rescheduling request
+#         form = BookingForm(request.POST, lawyer=booking.lawyer)
+
+#         if form.is_valid():
+#             new_booking_date = form.cleaned_data['booking_date']
+#             new_time_slot = form.cleaned_data['time_slot']
+
+#             # Check if the selected date is marked as a day off for the lawyer
+#             if LawyerDayOff.objects.filter(lawyer=booking.lawyer, date=new_booking_date).exists():
+#                 messages.error(request, 'The selected date is marked as a day off for the lawyer.')
+#             else:
+#                 # Check for existing bookings on the selected date and time slot
+#                 existing_booking = Booking.objects.filter(
+#                     lawyer=booking.lawyer,
+#                     booking_date=new_booking_date,
+#                     time_slot=new_time_slot,
+#                     status='confirmed'
+#                 ).first()
+
+#                 if existing_booking:
+#                     messages.error(request, 'This time slot is already booked by another user.')
+#                 else:
+#                     # Update the booking with the new date and time slot
+#                     booking.booking_date = new_booking_date
+#                     booking.time_slot = new_time_slot
+#                     booking.status = 'pending'  # You can set the status to 'confirmed' here
+#                     booking.save()
+#                     messages.success(request, 'Appointment rescheduled successfully.')
+#                     return redirect('client_dashboard')  # Redirect to the client's dashboard or a success page
+#     else:
+#         # If the request is a GET request, display the rescheduling form with initial data from the original booking
+#         form = BookingForm(lawyer=booking.lawyer, initial={'booking_date': booking.booking_date, 'time_slot': booking.time_slot})
+
+#     return render(request, 'reschedule_appointment.html', {'form': form, 'booking': booking})
+
+
+def reschedule_appointment(request, booking_id):
+    booking = get_object_or_404(Booking, pk=booking_id)
+    user = request.user
+
+    if request.method == 'POST':
+        form = BookingForm(request.POST, lawyer=booking.lawyer)
+
+        if form.is_valid():
+            new_booking_date = form.cleaned_data['booking_date']
+            new_time_slot = form.cleaned_data['time_slot']
+
+            # Check if the selected date is marked as a day off for the lawyer
+            if LawyerDayOff.objects.filter(lawyer=booking.lawyer, date=new_booking_date).exists():
+                messages.error(request, 'The selected date is marked as a day off for the lawyer.')
+            else:
+                # Check for existing bookings on the selected date and time slot
+                existing_booking = Booking.objects.filter(
+                    lawyer=booking.lawyer,
+                    booking_date=new_booking_date,
+                    time_slot=new_time_slot,
+                    status='confirmed'
+                ).first()
+
+                if existing_booking:
+                    messages.error(request, 'This time slot is already booked by another user.')
+                else:
+                    # Update the booking with the new date and time slot
+                    booking.booking_date = new_booking_date
+                    booking.time_slot = new_time_slot
+                    booking.status = 'pending'  # You can set the status to 'confirmed' here
+                    booking.save()
+                    messages.success(request, 'Appointment rescheduled successfully.')
+                    return redirect('dashboard')  # Redirect to the client's dashboard or a success page
+    else:
+        # Exclude the 'details' field from the form
+        form = BookingForm(lawyer=booking.lawyer, initial={'booking_date': booking.booking_date, 'time_slot': booking.time_slot})
+        form.fields.pop('details')  # Remove the 'details' field from the form
+
+    return render(request, 'reschedule_appointment.html', {'form': form, 'booking': booking})
+
 @login_required
 def booking_details(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
-    return render(request, 'booking_details.html', {'booking': booking})
+
+    # Check if the user making the request is the lawyer associated with the booking
+    if request.user == booking.lawyer.user:
+        if request.method == 'POST':
+            form = BookingStatusForm(request.POST, instance=booking)
+            if form.is_valid():
+                # Debugging: Print the status before saving
+                print("Status before saving:", booking.status)
+
+                form.save()
+
+                # Debugging: Print the status after saving
+                print("Status after saving:", booking.status)
+
+                # Redirect to a success page or display a success message
+                return redirect('lawyer_dashboard')  # Replace 'success_page' with your actual success page URL
+
+        else:
+            form = BookingStatusForm(instance=booking)
+
+        return render(request, 'booking_details.html', {'booking': booking, 'form': form})
+
+    # If the user making the request is not the booking's lawyer, deny access
+    else:
+        # You can customize this part to display an error message or redirect to an error page
+        return render(request, 'access_denied.html')
 
 @login_required
 def internship_detail(request, internship_id):
@@ -759,5 +891,23 @@ def lawyer_save(request):
         return redirect('lawyer_dashboard')
     else:
         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
+    
+def mark_holiday(request):
+    if request.method == 'POST':
+        holiday_date = request.POST.get('holiday_date')
+        user = request.user  # Get the current user
+
+        if user.user_type == 'lawyer':
+            lawyer = user.lawyer_profile  # Access the associated lawyer profile (use 'lawyer_profile' here)
+            # Check if the date is not already marked as a holiday
+            if not LawyerDayOff.objects.filter(lawyer=lawyer, date=holiday_date).exists():
+                LawyerDayOff.objects.create(lawyer=lawyer, date=holiday_date)
+                messages.success(request, 'Holiday marked successfully.')
+            else:
+                messages.warning(request, 'This date is already marked as a holiday.')
+        else:
+            messages.error(request, 'Only lawyers can mark holidays.')
+
+    return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
 
 

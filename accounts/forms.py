@@ -56,4 +56,19 @@ class InternshipForm(forms.ModelForm):
         
         # Use DateInput widget for the start_date field
         self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})  # Set the input type to 'date'
+        
+class BookingStatusForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ['status']
+        
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('canceled', 'Canceled'),
+        ('reschedule', 'Reschedule'),
+        # Add more status options as needed
+    ]
+
+    status = forms.ChoiceField(choices=STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
 

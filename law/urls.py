@@ -9,7 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('lawyerlist/', views.lawyer_list, name='lawyer_list'),
     path('about/', views.about, name='about'),
-     path('practice/', views.practice, name='practice'),
+    path('practice/', views.practice, name='practice'),
     path('contact/', views.contact, name='contact'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')), 
@@ -21,6 +21,10 @@ urlpatterns = [
     path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
     path('booking/<int:booking_id>/', views.booking_details, name='booking_details'),
     path('internship/<int:internship_id>/', views.internship_detail, name='internship_detail'),
+    path('mark_holiday/', views.mark_holiday, name='mark_holiday'),
+    path('reschedule/<int:booking_id>/', views.reschedule_appointment, name='reschedule_appointment'),
+
+
     # path('get_time_slots/', views.get_time_slots, name='get_time_slots'),
 
     # path('students/internship/<str:lawyer_name>/', views.internship_detail, name='internship_detail')

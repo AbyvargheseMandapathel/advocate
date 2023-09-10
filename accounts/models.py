@@ -175,13 +175,12 @@ class Booking(models.Model):
     details = models.TextField()
     booking_date = models.DateField()
     time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20 , default = "pending")
-    
+    status = models.CharField(max_length=20, default="pending")
+    original_booking_date = models.DateField(null=True, blank=True)
+
     def is_confirmed(self):
-        return self.status =="confirmed"
-    # created_at = models.DateTimeField(auto_now_add=True)
-    # date_time = models.DateTimeField(null=False, blank=False)
-    
+        return self.status == "confirmed"
+
     def __str__(self):
         return self.user.email
     
@@ -221,3 +220,10 @@ class Application(models.Model):
     
 # class StudentUser(CustomUser):
 #     is_approved = models.BooleanField(default=False)
+
+class LawyerDayOff(models.Model):
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
+    date = models.DateField()
+
+    def __str__(self):
+        return f"{self.lawyer} - {self.date}"

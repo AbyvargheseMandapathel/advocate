@@ -116,6 +116,14 @@
             </div>
         </div>
     </div>
+
+    <h3>Update Booking Status</h3>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Update Status</button>
+    </form>
+    
 <!-- JS here -->
 <script src="{% static 'js/vendor/modernizr-3.5.0.min.js' %}"></script>
 <script src="{% static 'js/vendor/jquery-1.12.4.min.js' %}"></script>

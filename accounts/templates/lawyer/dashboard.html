@@ -154,7 +154,17 @@
             </div>
           </div>
         
-
+          <div class="container mt-5">
+            <h2>Mark Holidays</h2>
+            <form method="post" action="{% url 'mark_holiday' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="holiday_date">Select a Date:</label>
+                    <input type="date" id="holiday_date" name="holiday_date" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Mark Holiday</button>
+            </form>
+        </div>
 </body>
 
 </html>
