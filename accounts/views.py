@@ -473,34 +473,44 @@ def book(request):
 def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
     user = request.user
-    
+
     if request.method == 'POST':
         form = BookingForm(request.POST, lawyer=lawyer)
-        
+
         if form.is_valid():
-            booking = form.save(commit=False)
-            booking.user = user
-            booking.lawyer = lawyer
-            booking.status = 'pending'
-            
-            # Assign the selected TimeSlot instance to the booking
-            selected_time_slot = form.cleaned_data['time_slot']
-            booking.time_slot = selected_time_slot
-            
-            # Check if the selected time slot is already booked on the same date for this lawyer
-            existing_booking = Booking.objects.filter(
-                Q(lawyer=lawyer) & Q(booking_date=booking.booking_date) & Q(time_slot=selected_time_slot)
-            ).exclude(Q(status='canceled') | Q(user=user)).first()
-            
-            if existing_booking:
-                messages.error(request, 'This time slot is already booked by another user.')
+            # Check if the selected day (an integer) falls within the lawyer's working days
+            selected_day = form.cleaned_data['booking_date'].weekday() + 1  # Get the day as an integer (1 for Monday, 2 for Tuesday, etc.)
+
+            # Check if the selected day exists in the lawyer's working days
+            if not lawyer.working_days.filter(name=selected_day).exists():
+                messages.error(request, 'This lawyer does not work on the selected day.')
             else:
-                # Check if the user already has a booking at the same time
-                user_existing_booking = Booking.objects.filter(
-                    Q(user=user) & Q(booking_date=booking.booking_date) & Q(time_slot=selected_time_slot)
-                ).exclude(status='canceled').first()
+                # Continue with booking logic
+                booking = form.save(commit=False)
+                booking.user = user
+                booking.lawyer = lawyer
+                booking.status = 'pending'
                 
-                if user_existing_booking:
+                # Assign the selected TimeSlot instance to the booking
+                selected_time_slot = form.cleaned_data['time_slot']
+                booking.time_slot = selected_time_slot
+                
+                # Check for existing bookings and user's existing bookings (as previously implemented)
+                existing_booking = Booking.objects.filter(
+                    lawyer=lawyer,
+                    booking_date=booking.booking_date,
+                    time_slot=selected_time_slot,
+                ).exclude(status='canceled').first()
+
+                user_existing_booking = Booking.objects.filter(
+                    user=user,
+                    booking_date=booking.booking_date,
+                    time_slot=selected_time_slot,
+                ).exclude(status='canceled').first()
+
+                if existing_booking:
+                    messages.error(request, 'This time slot is already booked by another user.')
+                elif user_existing_booking:
                     messages.error(request, 'You have already booked a lawyer at this time slot.')
                 else:
                     booking.save()
@@ -508,7 +518,7 @@ def book_lawyer(request, lawyer_id):
                     return redirect('home')
     else:
         form = BookingForm(lawyer=lawyer)
-    
+
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
 @login_required

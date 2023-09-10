@@ -26,7 +26,7 @@ class BookingForm(forms.ModelForm):
         model = Booking
         fields = ['details', 'booking_date', 'time_slot']
 
-    booking_date = forms.DateField(widget=forms.SelectDateWidget)
+    booking_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     time_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.none())  # Use ModelChoiceField
 
     def __init__(self, *args, **kwargs):
