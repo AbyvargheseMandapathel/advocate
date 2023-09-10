@@ -21,6 +21,7 @@ urlpatterns = [
     path('book_lawyer/<int:lawyer_id>/', views.book_lawyer, name='book_lawyer'),
     path('booking/<int:booking_id>/', views.booking_details, name='booking_details'),
     path('internship/<int:internship_id>/', views.internship_detail, name='internship_detail'),
+    # path('get_time_slots/', views.get_time_slots, name='get_time_slots'),
 
     # path('students/internship/<str:lawyer_name>/', views.internship_detail, name='internship_detail')
 

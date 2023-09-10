@@ -57,4 +57,3 @@ class InternshipForm(forms.ModelForm):
         # Use DateInput widget for the start_date field
         self.fields['start_date'].widget = forms.DateInput(attrs={'type': 'date'})  # Set the input type to 'date'
 
-

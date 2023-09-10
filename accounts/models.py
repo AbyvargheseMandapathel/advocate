@@ -69,6 +69,8 @@ class TimeSlot(models.Model):
     start_time = models.TimeField()
     # end_time = models.TimeField()
     
+    
+    
     def __str__(self):
         # return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
         return f"{self.start_time.strftime('%I:%M %p')} "

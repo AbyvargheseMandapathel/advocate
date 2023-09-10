@@ -28,6 +28,8 @@ import csv
 import os
 from django.utils import timezone
 import pytz  # Import pytz module
+from django.db.models import Q
+
 
 
 
@@ -470,13 +472,14 @@ def book(request):
 @login_required
 def book_lawyer(request, lawyer_id):
     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
+    user = request.user
     
     if request.method == 'POST':
-        form = BookingForm(request.POST, lawyer=lawyer)  # Pass lawyer as an argument
+        form = BookingForm(request.POST, lawyer=lawyer)
         
         if form.is_valid():
             booking = form.save(commit=False)
-            booking.user = request.user
+            booking.user = user
             booking.lawyer = lawyer
             booking.status = 'pending'
             
@@ -486,20 +489,26 @@ def book_lawyer(request, lawyer_id):
             
             # Check if the selected time slot is already booked on the same date for this lawyer
             existing_booking = Booking.objects.filter(
-                lawyer=lawyer,
-                booking_date=booking.booking_date,
-                time_slot=selected_time_slot,
-            ).exclude(status='canceled').first()
+                Q(lawyer=lawyer) & Q(booking_date=booking.booking_date) & Q(time_slot=selected_time_slot)
+            ).exclude(Q(status='canceled') | Q(user=user)).first()
             
             if existing_booking:
                 messages.error(request, 'This time slot is already booked by another user.')
             else:
-                booking.save()
-                # Redirect to a success page or display a success message
-                return redirect('home')
+                # Check if the user already has a booking at the same time
+                user_existing_booking = Booking.objects.filter(
+                    Q(user=user) & Q(booking_date=booking.booking_date) & Q(time_slot=selected_time_slot)
+                ).exclude(status='canceled').first()
+                
+                if user_existing_booking:
+                    messages.error(request, 'You have already booked a lawyer at this time slot.')
+                else:
+                    booking.save()
+                    # Redirect to a success page or display a success message
+                    return redirect('home')
     else:
-        form = BookingForm(lawyer=lawyer)  # Pass lawyer as an argument
-
+        form = BookingForm(lawyer=lawyer)
+    
     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
 @login_required
@@ -699,12 +708,12 @@ def lawyer_save(request):
         dob = request.POST['dob']
         pin = request.POST['pin']
         state = request.POST['state']
-        phone = request.POST['phone']
+        # phone = request.POST['phone']
         working_day_values = request.POST.getlist('working_days')
         working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
         working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
 
-        if not all([specialization, start_date_str, profile_picture, address, dob, pin, state, phone]):
+        if not all([specialization, start_date_str, profile_picture, address, dob, pin, state]):
             return HttpResponse("Please fill in all fields.")
 
         # Create or update the user's details
@@ -713,7 +722,7 @@ def lawyer_save(request):
         user.dob = dob
         user.pin = pin
         user.state = state
-        user.phone = phone
+        # user.phone = phone
         user.save()
 
         # Create or update the lawyer profile
@@ -740,6 +749,5 @@ def lawyer_save(request):
         return redirect('lawyer_dashboard')
     else:
         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
-
 
 
