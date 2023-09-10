@@ -67,6 +67,7 @@ class BookingStatusForm(forms.ModelForm):
         ('confirmed', 'Confirmed'),
         ('canceled', 'Canceled'),
         ('reschedule', 'Reschedule'),
+        ('notpaid', 'NotPaid'),
         # Add more status options as needed
     ]
 
