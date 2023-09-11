@@ -5,6 +5,10 @@
     background-color: #fff;
 }
 
+.dashboard-top-buttons {
+    width: calc(100% / 5);
+}
+
 a,
 a:active,
 a:focus {
@@ -41,4 +45,15 @@ a:hover {
     display: flex;
     justify-content: flex-end;
     font-size: 14px;
+}
+
+@media screen and (max-width:771px) {
+    .dashboard-top-buttons-row {
+        flex-direction: column;
+    }
+
+    .dashboard-top-buttons {
+        min-height: 2.5em;
+        width: 100%;
+    }
 }

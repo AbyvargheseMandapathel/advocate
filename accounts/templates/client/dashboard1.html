@@ -1,46 +1,45 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- client_dashboard.html -->
 
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<h2>Welcome, {{ user.first_name }}</h2>
 
-    <title>Bookings</title>
-</head>
-<body>
-    
-    <div class="container py-5">
-        <h3>Welcome Aby,</h3>
+<!-- Confirmed Bookings Section -->
+<h3>Confirmed Bookings</h3>
+<ul>
+    {% for booking in confirmed_bookings %}
+        <li>{{ booking.booking_date }} - {{ booking.time_slot }} - {{ booking.details }}</li>
+    {% empty %}
+        <li>No confirmed bookings.</li>
+    {% endfor %}
+</ul>
 
-        <div class="container"><h2>Example tab 2 (using standard nav-tabs)</h2></div>
+<!-- Pending Bookings Section -->
+<h3>Pending Bookings</h3>
+<ul>
+    {% for booking in pending_bookings %}
+        <li>{{ booking.booking_date }} - {{ booking.time_slot }} - {{ booking.details }}</li>
+    {% empty %}
+        <li>No pending bookings.</li>
+    {% endfor %}
+</ul>
 
-        <div id="exTab2" class="container">	
-        <ul class="nav nav-tabs">
-                    <li class="active">
-                <a  href="#1" data-toggle="tab">Overview</a>
-                    </li>
-                    <li><a href="#2" data-toggle="tab">Without clearfix</a>
-                    </li>
-                    <li><a href="#3" data-toggle="tab">Solution</a>
-                    </li>
-                </ul>
-        
-                    <div class="tab-content ">
-                      <div class="tab-pane active" id="1">
-                  <h3>Standard tab panel created on bootstrap using nav-tabs</h3>
-                        </div>
-                        <div class="tab-pane" id="2">
-                  <h3>Notice the gap between the content and tab after applying a background color</h3>
-                        </div>
-                <div class="tab-pane" id="3">
-                  <h3>add clearfix to tab-content (see the css)</h3>
-                        </div>
-                    </div>
-          </div>
-          <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-          <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-</body>
-</html>
+<!-- Canceled Bookings Section -->
+<h3>Canceled Bookings</h3>
+<ul>
+    {% for booking in canceled_bookings %}
+        <li>{{ booking.booking_date }} - {{ booking.time_slot }} - {{ booking.details }}</li>
+    {% empty %}
+        <li>No canceled bookings.</li>
+    {% endfor %}
+</ul>
+<!-- Canceled Bookings Section -->
+<h3>ReScheduled Bookings</h3>
+<ul>
+ {% for booking in rescheduled_bookings %}
+ <li>
+    {{ booking.booking_date }} - {{ booking.time_slot }} - {{ booking.details }}
+    <a href="{% url 'reschedule_appointment' booking.id %}" class="btn btn-primary">Reschedule</a>
+</li>
+ {% empty %}
+     <li>No canceled bookings.</li>
+ {% endfor %}
+</ul>

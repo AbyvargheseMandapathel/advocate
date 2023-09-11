@@ -36,6 +36,7 @@ from django.db.models import Q
 
 
 
+
 def login_view(request):
     if request.user.is_authenticated:
         if request.user.user_type == 'admin':
@@ -918,5 +919,10 @@ def mark_holiday(request):
         else:
             messages.error(request, 'Only lawyers can mark holidays.')
 
-    return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
+    # return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
+    return render(request, 'lawyer/mark_holiday.html')
+
+
+def update_lawyer_profile(request):
+    return render(request, 'update_lawyer_profile.html')
 
