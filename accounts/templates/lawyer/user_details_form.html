@@ -121,23 +121,24 @@
 
                     <div class="input-group">
                         <label for="working_time_start">Working Time Start:</label>
-    <select id="working_time_start" name="working_time_start" required>
-        <option value="" disabled selected>Select Start Time</option>
-        {% for time_slot in available_time_slots %}
-            <option value="{{ time_slot.id }}">{{ time_slot }}</option>
-        {% endfor %}
-    </select>
-                    </div>
-
-                    <div class="input-group">
-                        <select id="working_time_end" name="working_time_end" required>
-                            <option value="" disabled selected>Select End Time</option>
+                        <select id="working_time_start" name="working_time_start" required>
+                            <option value="" disabled selected>Select Start Time</option>
                             {% for time_slot in available_time_slots %}
-                                <option value="{{ time_slot.id }}">{{ time_slot }}</option>
+                                <option value="{{ time_slot.id }}">{{ time_slot.start_time|time:"h A" }}</option>
                             {% endfor %}
                         </select>
                     </div>
 
+                    <div class="input-group">
+                        <label for="working_time_end">Working Time End:</label>
+                        <select id="working_time_end" name="working_time_end" required>
+                            <option value="" disabled selected>Select End Time</option>
+                            {% for time_slot in available_time_slots %}
+                                <option value="{{ time_slot.id }}">{{ time_slot.start_time|time:"h A" }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>                 
+                    
                     <div class="input-group">
                         <label for="working_days">Working Days</label>
 

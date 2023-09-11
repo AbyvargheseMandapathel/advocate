@@ -67,9 +67,7 @@ class BookingStatusForm(forms.ModelForm):
         ('confirmed', 'Confirmed'),
         ('canceled', 'Canceled'),
         ('reschedule', 'Reschedule'),
-        ('notpaid', 'NotPaid'),
         # Add more status options as needed
     ]
 
     status = forms.ChoiceField(choices=STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
-

@@ -29,16 +29,11 @@ import os
 from django.utils import timezone
 import pytz  # Import pytz module
 from django.db.models import Q
-import stripe
-import json
-from django.http import JsonResponse
-import razorpay
-from django.conf import settings
 
 
-stripe.api_key = 'sk_test_51NoptkSEbU3gFkprufa6lFA7y8mtMK6tlXdXvsqxuDgSGyGOpQyrYSGI2yFUQoP6LhlZW3u0lGgbwNS3iESj1bn600Gr1l2uMU'
-razorpay_client = razorpay.Client(
-    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
+
+
+
 
 
 def login_view(request):
@@ -491,137 +486,60 @@ def submit(request):
 def book(request):
     return render(request, 'book.html')
 
+@login_required
+def book_lawyer(request, lawyer_id):
+    lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
+    user = request.user
 
-# def book_lawyer(request, lawyer_id):
-#     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
-#     user = request.user
+    if request.method == 'POST':
+        form = BookingForm(request.POST, lawyer=lawyer)
 
-#     if request.method == 'POST':
-#         form = BookingForm(request.POST, lawyer=lawyer)
+        if form.is_valid():
+            booking_date = form.cleaned_data['booking_date']
+            selected_day = booking_date.weekday() + 1
 
-#         if form.is_valid():
-#             booking_date = form.cleaned_data['booking_date']
-#             selected_day = booking_date.weekday() + 1
-
-#             if not lawyer.working_days.filter(name=selected_day).exists():
-#                 messages.error(request, 'This lawyer does not work on the selected day.')
-#             else:
-#                 # Check if the selected date is marked as a day off for the lawyer
-#                 if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
-#                     messages.error(request, 'This date is marked as a day off for the lawyer.')
-#                 else:
-#                     # Continue with booking logic
-#                     booking = form.save(commit=False)
-#                     booking.user = user
-#                     booking.lawyer = lawyer
-#                     booking.status = 'pending'
+            if not lawyer.working_days.filter(name=selected_day).exists():
+                messages.error(request, 'This lawyer does not work on the selected day.')
+            else:
+                # Check if the selected date is marked as a day off for the lawyer
+                if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
+                    messages.error(request, 'This date is marked as a day off for the lawyer.')
+                else:
+                    # Continue with booking logic
+                    booking = form.save(commit=False)
+                    booking.user = user
+                    booking.lawyer = lawyer
+                    booking.status = 'pending'
                     
-#                     # Assign the selected TimeSlot instance to the booking
-#                     selected_time_slot = form.cleaned_data['time_slot']
-#                     booking.time_slot = selected_time_slot
+                    # Assign the selected TimeSlot instance to the booking
+                    selected_time_slot = form.cleaned_data['time_slot']
+                    booking.time_slot = selected_time_slot
                     
-#                     # Check for existing bookings and user's existing bookings (as previously implemented)
-#                     existing_booking = Booking.objects.filter(
-#                         lawyer=lawyer,
-#                         booking_date=booking.booking_date,
-#                         time_slot=selected_time_slot,
-#                     ).exclude(status='canceled').first()
+                    # Check for existing bookings and user's existing bookings (as previously implemented)
+                    existing_booking = Booking.objects.filter(
+                        lawyer=lawyer,
+                        booking_date=booking.booking_date,
+                        time_slot=selected_time_slot,
+                    ).exclude(status='canceled').first()
 
-#                     user_existing_booking = Booking.objects.filter(
-#                         user=user,
-#                         booking_date=booking.booking_date,
-#                         time_slot=selected_time_slot,
-#                     ).exclude(status='canceled').first()
+                    user_existing_booking = Booking.objects.filter(
+                        user=user,
+                        booking_date=booking.booking_date,
+                        time_slot=selected_time_slot,
+                    ).exclude(status='canceled').first()
 
-#                     if existing_booking:
-#                         messages.error(request, 'This time slot is already booked by another user.')
-#                     elif user_existing_booking:
-#                         messages.error(request, 'You have already booked a lawyer at this time slot.')
-#                     else:
-#                         booking.save()
-#                         # Redirect to a success page or display a success message
-#                         return redirect('home')
-#     else:
-#         form = BookingForm(lawyer=lawyer)
+                    if existing_booking:
+                        messages.error(request, 'This time slot is already booked by another user.')
+                    elif user_existing_booking:
+                        messages.error(request, 'You have already booked a lawyer at this time slot.')
+                    else:
+                        booking.save()
+                        # Redirect to a success page or display a success message
+                        return redirect('home')
+    else:
+        form = BookingForm(lawyer=lawyer)
 
-#     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
-
-# @login_required
-# def book_lawyer(request, lawyer_id):
-#     lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
-#     user = request.user
-
-#     if request.method == 'POST':
-#         form = BookingForm(request.POST, lawyer=lawyer)
-
-#         if form.is_valid():
-#             booking_date = form.cleaned_data['booking_date']
-
-#             # Check if the selected date is in the past
-#             if booking_date < timezone.now().date():
-#                 messages.error(request, 'Please choose a date in the future.')
-#             else:
-#                 selected_day = booking_date.weekday() + 1
-
-#                 if not lawyer.working_days.filter(name=selected_day).exists():
-#                     messages.error(request, 'This lawyer does not work on the selected day.')
-#                 else:
-#                     # Check if the selected date is marked as a day off for the lawyer
-#                     if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
-#                         messages.error(request, 'This date is marked as a day off for the lawyer.')
-#                     else:
-#                         # Continue with booking logic
-#                         booking = form.save(commit=False)
-#                         booking.user = user
-#                         booking.lawyer = lawyer
-
-#                         # Assign the selected TimeSlot instance to the booking
-#                         selected_time_slot = form.cleaned_data['time_slot']
-#                         booking.time_slot = selected_time_slot
-
-#                         # Save the booking with status as 'not paid'
-#                         booking.status = 'notpaid'
-#                         booking.save()
-
-#                         try:
-#                             # Create a PaymentIntent using Stripe
-#                             intent = stripe.PaymentIntent.create(
-#                                 amount=100,  # Amount in cents (e.g., 100 cents = $1.00)
-#                                 currency='usd',
-#                                 description=f"Booking ID: {booking.id}",
-#                                 metadata={'booking_id': booking.id}
-#                             )
-
-#                             # Render the payment form with the client secret and booking ID
-#                             return render(request, 'payment_form.html', {'client_secret': intent.client_secret, 'booking_id': booking.id})
-
-#                         except stripe.error.CardError as e:
-#                             # Display error to user
-#                             messages.error(request, str(e))
-#                         except Exception as e:
-#                             # Handle other exceptions
-#                             messages.error(request, 'An error occurred while processing your payment.')
-
-#     else:
-#         form = BookingForm(lawyer=lawyer)
-
-#     return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
-
-# def update_booking_status(request):
-#     if request.method == 'POST':
-#         data = json.loads(request.body)
-#         booking_id = data.get('booking_id')
-
-#         # Get the booking object based on the provided booking_id
-#         booking = get_object_or_404(Booking, pk=booking_id)
-
-#         # Update the booking status to 'pending' in your database
-#         booking.status = 'pending'  # Replace with your status update logic
-#         booking.save()
-
-#         return JsonResponse({'message': 'Booking status updated successfully'})
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'})
+    return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
 
 # def reschedule_appointment(request, booking_id):
 #     # Get the booking object for the provided booking_id
@@ -668,103 +586,6 @@ def book(request):
 #         form = BookingForm(lawyer=booking.lawyer, initial={'booking_date': booking.booking_date, 'time_slot': booking.time_slot})
 
 #     return render(request, 'reschedule_appointment.html', {'form': form, 'booking': booking})
-
-@login_required
-def book_lawyer(request, lawyer_id):
-    lawyer = get_object_or_404(LawyerProfile, pk=lawyer_id)
-    user = request.user
-
-    if request.method == 'POST':
-        form = BookingForm(request.POST, lawyer=lawyer)
-
-        if form.is_valid():
-            booking_date = form.cleaned_data['booking_date']
-
-            # Check if the selected date is in the past
-            if booking_date < timezone.now().date():
-                messages.error(request, 'Please choose a date in the future.')
-            else:
-                selected_day = booking_date.weekday() + 1
-
-                if not lawyer.working_days.filter(name=selected_day).exists():
-                    messages.error(request, 'This lawyer does not work on the selected day.')
-                else:
-                    # Check if the selected date is marked as a day off for the lawyer
-                    if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
-                        messages.error(request, 'This date is marked as a day off for the lawyer.')
-                    else:
-                        # Continue with booking logic
-                        booking = form.save(commit=False)
-                        booking.user = user
-                        booking.lawyer = lawyer
-
-                        # Assign the selected TimeSlot instance to the booking
-                        selected_time_slot = form.cleaned_data['time_slot']
-                        booking.time_slot = selected_time_slot
-
-                        # Save the booking with status as 'not paid'
-                        booking.status = 'notpaid'
-                        booking.save()
-
-                        try:
-                            # Create an order using Razorpay
-                            amount = 100 * 1  # Amount in paise (e.g., 10000 paise = ₹100.00)
-                            order = razorpay_client.order.create({
-                                'amount': amount,
-                                'currency': 'INR',  # Change to your desired currency
-                                'payment_capture': 1,  # Automatically capture the payment
-                                'notes': {
-                                    'booking_id': booking.id,
-                                },
-                            })
-
-                            # Render the payment form with the Razorpay order ID
-                            return render(request, 'payment_form.html', {'order_id': order['id']})
-
-                        except Exception as e:
-                            # Handle exceptions
-                            messages.error(request, 'An error occurred while processing your payment.')
-
-    else:
-        form = BookingForm(lawyer=lawyer)
-
-    return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
-
-
-def update_booking_status(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        order_id = data.get('razorpay_order_id')
-        payment_id = data.get('razorpay_payment_id')
-        signature = data.get('razorpay_signature')
-
-        try:
-            # Verify the Razorpay payment
-            razorpay_client.utility.verify_payment_signature({
-                'razorpay_order_id': order_id,
-                'razorpay_payment_id': payment_id,
-                'razorpay_signature': signature,
-            })
-
-            # Get the booking object based on the provided booking_id
-            booking_id = data.get('notes').get('booking_id')
-            booking = get_object_or_404(Booking, pk=booking_id)
-
-            # Update the booking status to 'pending' in your database
-            booking.status = 'pending'  # Replace with your status update logic
-            booking.save()
-
-            return JsonResponse({'message': 'Booking status updated successfully'})
-
-        except razorpay.errors.SignatureVerificationError:
-            return JsonResponse({'error': 'Invalid Razorpay signature'})
-        except Exception as e:
-            # Handle other exceptions
-            messages.error(request, 'An error occurred while processing your payment.')
-
-    else:
-        return JsonResponse({'error': 'Invalid request method'})
-
 
 
 def reschedule_appointment(request, booking_id):
@@ -1024,12 +845,23 @@ def lawyer_save(request):
         specialization = request.POST['specialization']
         start_date_str = request.POST['start_date']
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        
+        # Calculate age based on the provided date of birth
+        dob = request.POST['dob']
+        dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
+        today = datetime.now().date()
+        age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
+        
+        if age < 25:
+            # Lawyer is less than 25 years old, so delete the lawyer's profile
+            LawyerProfile.objects.filter(user=request.user).delete()
+            return HttpResponse("Sorry, you must be at least 25 years old to create a lawyer account.")
+        
         profile_picture = request.FILES.get('profile_picture')
         address = request.POST['address']
-        dob = request.POST['dob']
         pin = request.POST['pin']
         state = request.POST['state']
-        # phone = request.POST['phone']
+        
         working_day_values = request.POST.getlist('working_days')
         working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
         working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
@@ -1043,7 +875,6 @@ def lawyer_save(request):
         user.dob = dob
         user.pin = pin
         user.state = state
-        # user.phone = phone
         user.save()
 
         # Create or update the lawyer profile
@@ -1088,5 +919,4 @@ def mark_holiday(request):
             messages.error(request, 'Only lawyers can mark holidays.')
 
     return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
-
 

@@ -23,7 +23,7 @@ urlpatterns = [
     path('internship/<int:internship_id>/', views.internship_detail, name='internship_detail'),
     path('mark_holiday/', views.mark_holiday, name='mark_holiday'),
     path('reschedule/<int:booking_id>/', views.reschedule_appointment, name='reschedule_appointment'),
-    path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
+    # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 
     # path('get_time_slots/', views.get_time_slots, name='get_time_slots'),

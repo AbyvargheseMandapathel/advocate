@@ -116,9 +116,9 @@ figure img {
                                         <li><a href="{% url 'about' %}">About</a></li>
                                         <li><a href="{% url 'contact' %}">Contact</a></li>
                                         <li><a href="{% url 'home' %}">Practice Area</a></li> 
-                                        <li><a href="#">Services<i class="ti-angle-down"></i></a>
+                                        <li><a href="{% url 'lawyer_list' %}">Lawyers<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
-                                                <li><a href="{% url 'lawyer_dashboard' %}">Lawyer</a></li>
+                                                
                                                 
                                                 {% if user.user_type == 'admin' %}
                                                 <li><a href="{% url 'add_lawyer' %}">Add Lawyer</a></li>

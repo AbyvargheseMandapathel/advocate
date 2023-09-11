@@ -65,15 +65,33 @@ class CustomUser(AbstractUser):
     # state = models.CharField(max_length=10, choices=STATES, default='kerala')  # Added: State field
     phone = models.CharField(max_length=15,blank=True, unique=True)  # Added: Phone number field
     
+# class TimeSlot(models.Model):
+#     start_time = models.TimeField()
+#     # end_time = models.TimeField()
+    
+    
+    
+#     def __str__(self):
+#         # return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
+#         return f"{self.start_time.strftime('%I:%M %p')} "
+
 class TimeSlot(models.Model):
+    # name = models.CharField(max_length=30)
     start_time = models.TimeField()
-    # end_time = models.TimeField()
-    
-    
-    
+
     def __str__(self):
-        # return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
-        return f"{self.start_time.strftime('%I:%M %p')} "
+        # Calculate the end time by adding one hour to the start_time
+        start_datetime = datetime.combine(datetime.today(), self.start_time)
+        end_datetime = start_datetime + timedelta(hours=1)
+
+        # Format the start and end times as "HH:MM AM/PM"
+        formatted_start_time = start_datetime.strftime("%I:%M %p")
+        formatted_end_time = end_datetime.strftime("%I:%M %p")
+
+        # Combine start and end times to create the name
+        name = f"{formatted_start_time} - {formatted_end_time}"
+
+        return name
 
     
 class LawyerProfile(models.Model):
