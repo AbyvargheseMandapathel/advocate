@@ -17,7 +17,7 @@ from .forms import CustomPasswordResetForm
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff
-from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm
+from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm ,CustomUserUpdateForm, LawyerProfileUpdateForm
 import markdown
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -29,12 +29,7 @@ import os
 from django.utils import timezone
 import pytz  # Import pytz module
 from django.db.models import Q
-
-
-
-
-
-
+from .forms import UserProfileUpdateForm  # Create a form for profile updates
 
 
 def login_view(request):
@@ -835,7 +830,6 @@ def student_save(request):
 #         return render(request, 'lawyer/user_details_form.html')
 
 
-@login_required
 def lawyer_save(request):
     if request.user.user_type != 'lawyer':
         return render(request, '404.html')
@@ -846,26 +840,30 @@ def lawyer_save(request):
         specialization = request.POST['specialization']
         start_date_str = request.POST['start_date']
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-        
+
         # Calculate age based on the provided date of birth
         dob = request.POST['dob']
         dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
         today = datetime.now().date()
         age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
-        
+
         if age < 25:
             # Lawyer is less than 25 years old, so delete the lawyer's profile
             LawyerProfile.objects.filter(user=request.user).delete()
             return HttpResponse("Sorry, you must be at least 25 years old to create a lawyer account.")
-        
+
         profile_picture = request.FILES.get('profile_picture')
         address = request.POST['address']
         pin = request.POST['pin']
         state = request.POST['state']
-        
+
         working_day_values = request.POST.getlist('working_days')
         working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
         working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
+
+        # Handle the locations field without using a form
+        input_str = request.POST['locations']
+        locations = input_str.split(",")
 
         if not all([specialization, start_date_str, profile_picture, address, dob, pin, state]):
             return HttpResponse("Please fill in all fields.")
@@ -896,6 +894,10 @@ def lawyer_save(request):
 
         lawyer_profile.working_time_start = working_time_start
         lawyer_profile.working_time_end = working_time_end
+
+        # Set the locations field based on the input
+        lawyer_profile.locations.set(locations)
+
         lawyer_profile.save()
 
         # Redirect to a success page or the dashboard
@@ -923,6 +925,45 @@ def mark_holiday(request):
     return render(request, 'lawyer/mark_holiday.html')
 
 
-def update_lawyer_profile(request):
-    return render(request, 'update_lawyer_profile.html')
+def update_profile(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = UserProfileUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('client_dashboard')  # Redirect to the user's profile page after updating
+    else:
+        form = UserProfileUpdateForm(instance=user)
+
+    return render(request, 'client/update_profile.html', {'form': form})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import CustomUserUpdateForm, LawyerProfileUpdateForm
+from .models import CustomUser, LawyerProfile
+
+def update_lawyer_profile(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        user_form = CustomUserUpdateForm(request.POST, instance=user)
+        profile_form = LawyerProfileUpdateForm(request.POST, request.FILES, instance=lawyer_profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return redirect('home')  # Redirect to a success page
+
+    else:
+        user_form = CustomUserUpdateForm(instance=user)
+        profile_form = LawyerProfileUpdateForm(instance=lawyer_profile)
+
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form,
+    }
+
+    return render(request, 'lawyer/update_lawyer_profile.html', context)
+
 

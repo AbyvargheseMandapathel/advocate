@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
-from .models import Booking ,Internship ,LawyerProfile, TimeSlot
+from .models import Booking ,Internship ,LawyerProfile, TimeSlot ,CustomUser
 from datetime import timedelta
 
 class CustomPasswordResetForm(SetPasswordForm):
@@ -71,6 +71,23 @@ class BookingStatusForm(forms.ModelForm):
     ]
 
     status = forms.ChoiceField(choices=STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
+    
+    
+class UserProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['address', 'pin', 'state']  # Add other fields as needed
+        
+        
+class CustomUserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['address', 'pin', 'state']
+
+class LawyerProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = LawyerProfile
+        fields = [ 'profile_picture', 'working_days', 'working_time_start', 'working_time_end', 'locations']
     
     
 

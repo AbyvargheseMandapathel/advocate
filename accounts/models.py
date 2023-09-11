@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 import datetime
 from datetime import datetime, timedelta
+from taggit.managers import TaggableManager
 
 
 
@@ -116,6 +117,8 @@ class LawyerProfile(models.Model):
     working_days = models.ManyToManyField('Day', blank=True)
     working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')
     working_time_end = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_end_time')
+    locations = TaggableManager()
+
     # working_time_start = models.TimeField(null=True, blank=True)
     # working_time_end = models.TimeField(null=True, blank=True)
     # working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')

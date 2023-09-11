@@ -113,16 +113,21 @@
 
         <!-- dashboard top buttons start -->
         <div class="row">
-            <div class="col-6 mt-3 dashboard-top-buttons">
+            <div class="col-4 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-advocate">{{ booking_count }}</i>
                 <h6 style="padding: 0; margin: 0;">No of Bookings</h6>
             </div>
             
-            <div class="col-6 mt-3 dashboard-top-buttons">
+            <div class="col-4 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-user"></i>
                 <button>
                     <h6 style="padding: 0; margin: 0;">Assign Works</h6>
                 </button>
+            </div>
+            <div class="col-4 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa-advocate"></i>
+                <a href="{% url 'update_lawyer_profile' user_id=user.pk %}">
+                    <h6 style="padding: 0; margin: 0;">update Profile</h6></a>
             </div>
         </div>
         <!-- dashboard top buttons end -->
