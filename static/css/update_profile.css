@@ -50,3 +50,23 @@
         display: none;
     }
 }
+
+.working-days-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.working-days-group p {
+    display: flex;
+    align-items: center;
+}
+
+.working-days-group p input {
+    width: 1em;
+    margin-right: 5px;
+    accent-color: #f2c64d;
+}
+
+.working-days-group p span {
+    margin-right: 1em   ;
+}

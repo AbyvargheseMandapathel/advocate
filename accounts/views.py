@@ -1015,3 +1015,16 @@ def update_lawyer_profile(request, user_id):
     return render(request, 'lawyer/update_lawyer_profile.html', context)
 
 
+def all_bookings(request):
+    # Fetch all bookings from the database
+    bookings = Booking.objects.all()
+
+    # Pass the bookings to the template
+    context = {
+        'bookings': bookings,
+    }
+
+    # Render the template
+    return render(request, 'bookings.html', context)
+
+
