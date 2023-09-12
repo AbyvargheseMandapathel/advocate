@@ -970,6 +970,10 @@ def update_profile(request):
 
 
 def update_lawyer_profile(request, user_id):
+    
+    if request.user.id != user_id:
+        return redirect('home')
+    
     print("Reached update_lawyer_profile view")
     user = get_object_or_404(CustomUser, id=user_id)
     lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
@@ -979,6 +983,8 @@ def update_lawyer_profile(request, user_id):
         user.address = request.POST.get('address', user.address)
         user.pin = request.POST.get('pin', user.pin)
         user.state = request.POST.get('state', user.state)
+        # Get the choices for the 'state' field
+        state_choices = LawyerProfile.SPECIALIZATIONS
 
         # Parse the 'locations' input as a list of tags
         locations_input = request.POST.get('locations', '')
@@ -1012,6 +1018,7 @@ def update_lawyer_profile(request, user_id):
     context = {
         'user': user,
         'lawyer_profile': lawyer_profile,
+        
     }
 
     return render(request, 'lawyer/update_lawyer_profile.html', context)

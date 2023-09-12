@@ -35,7 +35,7 @@
                       alt="profile picture" id="pic" />                 
                             <label for="profile_picture" class="profile-pic-change">
                                 <i class="fa-solid fa-camera"></i>
-                                <input type="file" name="profile_picture" id="profile_picture" accept=".jpg, .jpeg, .png" required hidden />
+                                <input type="file" name="profile_picture" id="profile_picture" accept=".jpg, .jpeg, .png"  hidden />
                             </label>
                     </figure>
                 </div>
@@ -45,18 +45,18 @@
                     
                     <div class="input-group">
                         <label for="name">Address</label>
-                        <input type="text" id="address" name="address"  required >
+                        <input type="text" id="address" name="address" value="{{ user.address }}" placeholder="{{ user.address }}" />
                     </div>
                     
                     
                     <div class="input-group">
                         <label for="name">Pin Code</label>
-                        <input type="text" name="pin" />
+                        <input type="text" name="pin" value="{{ lawyer_profile.pin }}" placeholder = "{{ lawyer_profile.pin }}" />
                     </div>
 
                     <div class="input-group">
                         <label for="state">State</label>
-                        <select class="form-select" id="state" name="state" required >
+                        <select class="form-select" id="state" name="state"  >
                           <option value="" disabled selected>State</option>
                           <option value="Andhra Pradesh">Andhra Pradesh</option>
                           <option value="Arunachal Pradesh">Arunachal Pradesh</option>
