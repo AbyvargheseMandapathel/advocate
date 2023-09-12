@@ -968,27 +968,39 @@ def update_profile(request):
 
 
 def update_lawyer_profile(request, user_id):
+    print("Reached update_lawyer_profile view")
     user = get_object_or_404(CustomUser, id=user_id)
     lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        user.address = request.POST['address']# Get the email from POST data
-        user.pin = request.POST['pin']
-        user.state = request.POST['state']
+        # Update user fields if provided in the form, or keep the existing values
+        user.address = request.POST.get('address', user.address)
+        user.pin = request.POST.get('pin', user.pin)
+        user.state = request.POST.get('state', user.state)
 
+        # Parse the 'locations' input as a list of tags
+        locations_input = request.POST.get('locations', '')
+        locations = [location.strip() for location in locations_input.split(',') if location.strip()]
 
-        lawyer_profile.working_days = request.POST.get('working_days')
-        lawyer_profile.address = request.POST.get('address')
-        lawyer_profile.specialization = request.POST.get('specialization')
+        # Use the 'set()' method to update the working_days M2M field
+        working_days_input = request.POST.getlist('working_days')
+        if working_days_input:
+            lawyer_profile.working_days.set(working_days_input)
 
-        # Assuming locations is a ManyToManyField, handle it separately
-        locations = request.POST.getlist('locations')
-        lawyer_profile.locations.set(locations)
+        lawyer_profile.specialization = request.POST.get('specialization', lawyer_profile.specialization)
+
+        # If locations are provided in the form, update them; otherwise, keep existing values
+        if locations:
+            lawyer_profile.locations.set(locations)
 
         # Handle profile_picture file upload
         profile_picture = request.FILES.get('profile_picture')
         if profile_picture:
             lawyer_profile.profile_picture = profile_picture
+
+        # Check if a new profile_picture is provided; otherwise, keep the existing image
+        if not profile_picture and lawyer_profile.profile_picture:
+            lawyer_profile.profile_picture = lawyer_profile.profile_picture  # Keep the existing image
 
         user.save()
         lawyer_profile.save()
