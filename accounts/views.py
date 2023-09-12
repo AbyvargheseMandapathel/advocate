@@ -30,6 +30,8 @@ from django.utils import timezone
 import pytz  # Import pytz module
 from django.db.models import Q
 from .forms import UserProfileUpdateForm  # Create a form for profile updates
+from django.core.paginator import Paginator
+
 
 
 def login_view(request):
@@ -1032,12 +1034,26 @@ def list_lawyers(request):
     # Fetch all lawyer profiles from the database
     lawyers = LawyerProfile.objects.all()
 
+    # Search functionality
+    search_query = request.GET.get('search')
+    if search_query:
+        # Use Q objects to perform a case-insensitive search on concatenated names
+        lawyers = lawyers.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+
+    # Pagination
+    page_number = request.GET.get('page')
+    paginator = Paginator(lawyers, 10)  # Show 10 lawyers per page
+    page = paginator.get_page(page_number)
+
     # Pass the lawyer profiles to the template
     context = {
-        'lawyers': lawyers,
+        'lawyers': page,  # Use the paginated lawyers
+        'search_query': search_query,
     }
 
     # Render the template
     return render(request, 'lawyerfulllist.html', context)
-
 
