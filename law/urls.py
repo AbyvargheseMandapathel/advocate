@@ -24,6 +24,7 @@ urlpatterns = [
     path('mark_holiday/', views.mark_holiday, name='mark_holiday'),
     path('reschedule/<int:booking_id>/', views.reschedule_appointment, name='reschedule_appointment'),
     path('bookings/', views.all_bookings, name='all_bookings'),
+    path('lawyers_list/', views.list_lawyers, name='list_lawyers'),
     # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 

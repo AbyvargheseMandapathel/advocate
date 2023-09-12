@@ -1028,3 +1028,16 @@ def all_bookings(request):
     return render(request, 'bookings.html', context)
 
 
+def list_lawyers(request):
+    # Fetch all lawyer profiles from the database
+    lawyers = LawyerProfile.objects.all()
+
+    # Pass the lawyer profiles to the template
+    context = {
+        'lawyers': lawyers,
+    }
+
+    # Render the template
+    return render(request, 'lawyerfulllist.html', context)
+
+
