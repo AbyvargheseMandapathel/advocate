@@ -67,6 +67,7 @@ class BookingStatusForm(forms.ModelForm):
         ('confirmed', 'Confirmed'),
         ('canceled', 'Canceled'),
         ('reschedule', 'Reschedule'),
+        ('notpaid', 'NotPaid'),
         # Add more status options as needed
     ]
 
@@ -87,7 +88,12 @@ class CustomUserUpdateForm(forms.ModelForm):
 class LawyerProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = LawyerProfile
-        fields = [ 'profile_picture', 'working_days', 'working_time_start', 'working_time_end', 'locations']
+        fields = ['profile_picture', 'working_days', 'working_time_start', 'working_time_end', 'locations']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profile_picture'].widget.attrs.update({'class': 'profile_picture'})
+
     
     
 

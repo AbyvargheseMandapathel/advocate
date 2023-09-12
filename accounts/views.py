@@ -236,12 +236,14 @@ def client_dashboard(request):
     pending_bookings = all_bookings.filter(status='pending')
     canceled_bookings = all_bookings.filter(status='canceled')
     rescheduled_bookings = all_bookings.filter(status='reschedule')
+    notpaid_bookings = all_bookings.filter(status='notpaid')
 
     context = {
         'confirmed_bookings': confirmed_bookings,
         'pending_bookings': pending_bookings,
         'canceled_bookings': canceled_bookings,
-        'rescheduled_bookings':rescheduled_bookings
+        'rescheduled_bookings':rescheduled_bookings,
+        'notpaid_bookings':notpaid_bookings,
     }
 
     return render(request, 'client/dashboard.html', context)
@@ -604,7 +606,7 @@ def reschedule_appointment(request, booking_id):
                     lawyer=booking.lawyer,
                     booking_date=new_booking_date,
                     time_slot=new_time_slot,
-                    status='confirmed'
+                    status='pending'
                 ).first()
 
                 if existing_booking:
@@ -938,30 +940,64 @@ def update_profile(request):
 
     return render(request, 'client/update_profile.html', {'form': form})
 
-from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CustomUserUpdateForm, LawyerProfileUpdateForm
-from .models import CustomUser, LawyerProfile
+
+
+# def update_lawyer_profile(request, user_id):
+#     user = get_object_or_404(CustomUser, id=user_id)
+#     lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
+
+#     if request.method == 'POST':
+#         user_form = CustomUserUpdateForm(request.POST, instance=user)
+#         profile_form = LawyerProfileUpdateForm(request.POST, request.FILES, instance=lawyer_profile)
+
+#         if user_form.is_valid() and profile_form.is_valid():
+#             user_form.save()
+#             profile_form.save()
+#             return redirect('home')  # Redirect to a success page
+
+#     else:
+#         user_form = CustomUserUpdateForm(instance=user)
+#         profile_form = LawyerProfileUpdateForm(instance=lawyer_profile)
+
+#     context = {
+#         'user_form': user_form,
+#         'profile_form': profile_form,
+#     }
+
+#     return render(request, 'lawyer/update_lawyer_profile.html', context)
+
 
 def update_lawyer_profile(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
     lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        user_form = CustomUserUpdateForm(request.POST, instance=user)
-        profile_form = LawyerProfileUpdateForm(request.POST, request.FILES, instance=lawyer_profile)
+        user.address = request.POST['address']# Get the email from POST data
+        user.pin = request.POST['pin']
+        user.state = request.POST['state']
 
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            return redirect('home')  # Redirect to a success page
 
-    else:
-        user_form = CustomUserUpdateForm(instance=user)
-        profile_form = LawyerProfileUpdateForm(instance=lawyer_profile)
+        lawyer_profile.working_days = request.POST.get('working_days')
+        lawyer_profile.address = request.POST.get('address')
+        lawyer_profile.specialization = request.POST.get('specialization')
 
+        # Assuming locations is a ManyToManyField, handle it separately
+        locations = request.POST.getlist('locations')
+        lawyer_profile.locations.set(locations)
+
+        # Handle profile_picture file upload
+        profile_picture = request.FILES.get('profile_picture')
+        if profile_picture:
+            lawyer_profile.profile_picture = profile_picture
+
+        user.save()
+        lawyer_profile.save()
+        return redirect('home')  # Redirect to a success page
+
+    # For GET request, retrieve and display the form
     context = {
-        'user_form': user_form,
-        'profile_form': profile_form,
+        'user': user,
+        'lawyer_profile': lawyer_profile,
     }
 
     return render(request, 'lawyer/update_lawyer_profile.html', context)
