@@ -115,12 +115,12 @@
         <div class="row">
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-advocate">{{ lawyer_count }}</i>
-                <h6 style="padding: 0; margin: 0;">No of Lawyers</h6>
+                <a href="{% url 'list_lawyers' %}"><h6 style="padding: 0; margin: 0;">No of Lawyers</h6></a>
             </div>
 
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-null">{{ booking_count }}</i>
-                <h6 style="padding: 0; margin: 0;">Total Bookings</h6>
+                <a href="{% url 'all_bookings' %}"><h6 style="padding: 0; margin: 0;">Total Bookings</h6></a>
             </div>
             <div class="col-sm-3 mt-3 dashboard-top-buttons">
                 <i class="fa-solid fa-null">{{ students_count }}</i>

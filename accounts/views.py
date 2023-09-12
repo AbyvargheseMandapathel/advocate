@@ -290,7 +290,7 @@ def add_lawyer(request):
             messages.error(request, 'Email already exists.')
             return render(request, 'admin/add_lawyer.html')
         
-        # Check if the email already exists in the database
+        # Check if the phone already exists in the database
         if CustomUser.objects.filter(phone=phone).exists():
             messages.error(request, 'Phone already exists.')
             return render(request, 'admin/add_lawyer.html')
@@ -476,6 +476,10 @@ def contact(request):
 @login_required
 def error(request):
     return render(request, '404.html')
+
+def sorry(request):
+    return render(request, '404.html')
+
 @login_required
 def mail(request):
     return render(request, 'mail.html')
@@ -496,46 +500,51 @@ def book_lawyer(request, lawyer_id):
 
         if form.is_valid():
             booking_date = form.cleaned_data['booking_date']
-            selected_day = booking_date.weekday() + 1
-
-            if not lawyer.working_days.filter(name=selected_day).exists():
-                messages.error(request, 'This lawyer does not work on the selected day.')
+            
+            # Check if the booking date is in the future
+            if booking_date <= timezone.localdate():
+                messages.error(request, 'You can only book for future dates.')
             else:
-                # Check if the selected date is marked as a day off for the lawyer
-                if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
-                    messages.error(request, 'This date is marked as a day off for the lawyer.')
+                selected_day = booking_date.weekday() + 1
+
+                if not lawyer.working_days.filter(name=selected_day).exists():
+                    messages.error(request, 'This lawyer does not work on the selected day.')
                 else:
-                    # Continue with booking logic
-                    booking = form.save(commit=False)
-                    booking.user = user
-                    booking.lawyer = lawyer
-                    booking.status = 'pending'
-                    
-                    # Assign the selected TimeSlot instance to the booking
-                    selected_time_slot = form.cleaned_data['time_slot']
-                    booking.time_slot = selected_time_slot
-                    
-                    # Check for existing bookings and user's existing bookings (as previously implemented)
-                    existing_booking = Booking.objects.filter(
-                        lawyer=lawyer,
-                        booking_date=booking.booking_date,
-                        time_slot=selected_time_slot,
-                    ).exclude(status='canceled').first()
-
-                    user_existing_booking = Booking.objects.filter(
-                        user=user,
-                        booking_date=booking.booking_date,
-                        time_slot=selected_time_slot,
-                    ).exclude(status='canceled').first()
-
-                    if existing_booking:
-                        messages.error(request, 'This time slot is already booked by another user.')
-                    elif user_existing_booking:
-                        messages.error(request, 'You have already booked a lawyer at this time slot.')
+                    # Check if the selected date is marked as a day off for the lawyer
+                    if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
+                        messages.error(request, 'This date is marked as a day off for the lawyer.')
                     else:
-                        booking.save()
-                        # Redirect to a success page or display a success message
-                        return redirect('home')
+                        # Continue with booking logic
+                        booking = form.save(commit=False)
+                        booking.user = user
+                        booking.lawyer = lawyer
+                        booking.status = 'pending'
+                        
+                        # Assign the selected TimeSlot instance to the booking
+                        selected_time_slot = form.cleaned_data['time_slot']
+                        booking.time_slot = selected_time_slot
+                        
+                        # Check for existing bookings and user's existing bookings (as previously implemented)
+                        existing_booking = Booking.objects.filter(
+                            lawyer=lawyer,
+                            booking_date=booking.booking_date,
+                            time_slot=selected_time_slot,
+                        ).exclude(status='canceled').first()
+
+                        user_existing_booking = Booking.objects.filter(
+                            user=user,
+                            booking_date=booking.booking_date,
+                            time_slot=selected_time_slot,
+                        ).exclude(status='canceled').first()
+
+                        if existing_booking:
+                            messages.error(request, 'This time slot is already booked by another user.')
+                        elif user_existing_booking:
+                            messages.error(request, 'You have already booked a lawyer at this time slot.')
+                        else:
+                            booking.save()
+                            # Redirect to a success page or display a success message
+                            return redirect('home')
     else:
         form = BookingForm(lawyer=lawyer)
 
@@ -656,7 +665,7 @@ def booking_details(request, booking_id):
     # If the user making the request is not the booking's lawyer, deny access
     else:
         # You can customize this part to display an error message or redirect to an error page
-        return render(request, 'access_denied.html')
+        return render(request, 'sorry.html')
 
 @login_required
 def internship_detail(request, internship_id):
@@ -852,9 +861,12 @@ def lawyer_save(request):
         age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
 
         if age < 25:
-            # Lawyer is less than 25 years old, so delete the lawyer's profile
+            
             LawyerProfile.objects.filter(user=request.user).delete()
-            return HttpResponse("Sorry, you must be at least 25 years old to create a lawyer account.")
+            return render(request, 'sorry.html')
+         
+        if (start_date - dob_date).days < 25 * 365:
+            return HttpResponse("You must be at least 25 years old to set the start date.")
 
         profile_picture = request.FILES.get('profile_picture')
         address = request.POST['address']
@@ -864,12 +876,15 @@ def lawyer_save(request):
         working_day_values = request.POST.getlist('working_days')
         working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
         working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
+        budget = request.POST['budget']
+        cases_won = request.POST['cases_won']
+        cases_lost = request.POST['cases_lost']  # Extract budget, cases_won, and cases_lost from form data
 
         # Handle the locations field without using a form
         input_str = request.POST['locations']
         locations = input_str.split(",")
 
-        if not all([specialization, start_date_str, profile_picture, address, dob, pin, state]):
+        if not all([specialization, start_date_str, profile_picture, address, dob, pin, state, budget, cases_won, cases_lost]):
             return HttpResponse("Please fill in all fields.")
 
         # Create or update the user's details
@@ -879,12 +894,16 @@ def lawyer_save(request):
         user.pin = pin
         user.state = state
         user.save()
+        print("User saved")
 
         # Create or update the lawyer profile
         lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
         lawyer_profile.specialization = specialization
         lawyer_profile.start_date = start_date
         lawyer_profile.profile_picture = profile_picture
+        lawyer_profile.budget = budget
+        lawyer_profile.cases_won = cases_won
+        lawyer_profile.cases_lost = cases_lost  # Assign budget, cases_won, and cases_lost
 
         # Clear existing working days and set new ones based on selected values
         lawyer_profile.working_days.clear()
@@ -908,6 +927,7 @@ def lawyer_save(request):
         return redirect('lawyer_dashboard')
     else:
         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
+
     
 def mark_holiday(request):
     if request.method == 'POST':

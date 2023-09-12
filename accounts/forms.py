@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
 from .models import Booking ,Internship ,LawyerProfile, TimeSlot ,CustomUser
-from datetime import timedelta
+from datetime import timedelta ,datetime
+
 
 class CustomPasswordResetForm(SetPasswordForm):
     new_password2 = forms.CharField(
@@ -34,15 +35,15 @@ class BookingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         
         if lawyer:
+            # Convert lawyer's working end time to datetime.datetime and subtract 1 hour
+            end_time = datetime.combine(datetime.today(), lawyer.working_time_end.start_time) - timedelta(hours=1)
+            
             available_time_slots = TimeSlot.objects.filter(
                 start_time__gte=lawyer.working_time_start.start_time,
-                # end_time__lte=lawyer.working_time_end.end_time
+                start_time__lt=end_time.time(),  # Convert back to datetime.time
             )
             self.fields['time_slot'].queryset = available_time_slots
-
-
-            
-            
+          
         
 class InternshipForm(forms.ModelForm):
     class Meta:

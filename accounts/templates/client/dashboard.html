@@ -89,7 +89,11 @@
                                             <a href="#">Welcome {{ user.first_name }}<i class="ti-angle-down"></i></a>
                                             <ul class="submenu">
                                                 {% if user.user_type == 'admin' %}
-                                                <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>                                                {% endif %}
+                                                <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>                                       
+                                                         {% endif %}
+                                                         {% if user.user_type == 'lawyer' %}
+                                                         <li><a href="{% url 'lawyer_dashboard' %}">Dashboard</a></li>                                       
+                                                                  {% endif %}
                                                 <li><a href="{% url 'logout' %}">Logout</a></li>
                                             </ul>
                                         </li>
