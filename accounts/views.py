@@ -257,7 +257,9 @@ def lawyer_dashboard(request):
         # Check if the lawyer profile is complete based on specified fields
         profile = request.user.lawyer_profile
         user = request.user
-        if not all([profile.specialization, profile.start_date, profile.profile_picture, user.address, user.dob, user.pin, user.state, user.phone, profile.working_days, profile.working_time_start, profile.working_time_end]):
+        # if not all([profile.specialization, profile.start_date, profile.profile_picture, user.address, user.dob, user.pin, user.state, user.phone, profile.working_days, profile.working_time_start, profile.working_time_end]):
+        if not all([profile.specialization, profile.start_date, user.address, user.dob, user.phone,]):
+
             # Redirect to the lawyer_save view if any of the fields are missing
             return redirect('lawyer_save')
     
@@ -851,10 +853,6 @@ def lawyer_save(request):
 
     if request.method == 'POST':
         specialization = request.POST['specialization']
-        start_date_str = request.POST['start_date']
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
-
-        # Calculate age based on the provided date of birth
         dob = request.POST['dob']
         dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
         today = datetime.now().date()
@@ -865,68 +863,135 @@ def lawyer_save(request):
             LawyerProfile.objects.filter(user=request.user).delete()
             return render(request, 'sorry.html')
          
-        if (start_date - dob_date).days < 25 * 365:
-            return HttpResponse("You must be at least 25 years old to set the start date.")
-
-        profile_picture = request.FILES.get('profile_picture')
+      
         address = request.POST['address']
-        pin = request.POST['pin']
-        state = request.POST['state']
+        total_cases_handeled = request.POST['total_cases_handeled']
+        currendly_handling = request.POST['currendly_handling']
+        experience = request.POST['experience']
+        court = request.POST['court']
+     
 
-        working_day_values = request.POST.getlist('working_days')
-        working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
-        working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
-        budget = request.POST['budget']
-        cases_won = request.POST['cases_won']
-        cases_lost = request.POST['cases_lost']  # Extract budget, cases_won, and cases_lost from form data
-
-        # Handle the locations field without using a form
-        input_str = request.POST['locations']
-        locations = input_str.split(",")
-
-        if not all([specialization, start_date_str, profile_picture, address, dob, pin, state, budget, cases_won, cases_lost]):
-            return HttpResponse("Please fill in all fields.")
+        # if not all([specialization,  address, dob,total_cases_handeled,currendly_handling,experience,court]):
+        #     return HttpResponse("Please fill in all fields.")
 
         # Create or update the user's details
         user = request.user
         user.address = address
         user.dob = dob
-        user.pin = pin
-        user.state = state
+        
         user.save()
         print("User saved")
 
-        # Create or update the lawyer profile
+     
         lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
         lawyer_profile.specialization = specialization
-        lawyer_profile.start_date = start_date
-        lawyer_profile.profile_picture = profile_picture
-        lawyer_profile.budget = budget
-        lawyer_profile.cases_won = cases_won
-        lawyer_profile.cases_lost = cases_lost  # Assign budget, cases_won, and cases_lost
-
-        # Clear existing working days and set new ones based on selected values
-        lawyer_profile.working_days.clear()
-        for day_value in working_day_values:
-            day, created = Day.objects.get_or_create(name=day_value)
-            lawyer_profile.working_days.add(day)
-
-        # Retrieve the selected TimeSlot instances based on their IDs
-        working_time_start = get_object_or_404(TimeSlot, id=working_time_start_id)
-        working_time_end = get_object_or_404(TimeSlot, id=working_time_end_id)
-
-        lawyer_profile.working_time_start = working_time_start
-        lawyer_profile.working_time_end = working_time_end
-
-        # Set the locations field based on the input
-        lawyer_profile.locations.set(locations)
+       
+        lawyer_profile.total_cases_handeled=total_cases_handeled
+        lawyer_profile.currendly_handling=currendly_handling
+        lawyer_profile.experience=experience
+        lawyer_profile.court = court
 
         lawyer_profile.save()
+        print("lawyer saved")
 
-        # Redirect to a success page or the dashboard
-        return redirect('lawyer_dashboard')
+        return render(request,'lawyer/dashboard.html')
+     
     else:
         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
+    
+
+# def lawyer_save(request):
+#     if request.user.user_type != 'lawyer':
+#         return render(request, '404.html')
+
+#     available_time_slots = TimeSlot.objects.all()
+
+#     if request.method == 'POST':
+#         specialization = request.POST['specialization']
+#         # start_date_str = request.POST['start_date']
+#         # start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+
+#         # Calculate age based on the provided date of birth
+#         dob = request.POST['dob']
+#         dob_date = datetime.strptime(dob, '%Y-%m-%d').date()
+#         today = datetime.now().date()
+#         age = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
+
+#         if age < 25:
+            
+#             LawyerProfile.objects.filter(user=request.user).delete()
+#             return render(request, 'sorry.html')
+         
+#         # if (start_date - dob_date).days < 25 * 365:
+#         #     return HttpResponse("You must be at least 25 years old to set the start date.")
+
+#         # profile_picture = request.FILES.get('profile_picture')
+#         address = request.POST['address']
+#         total_cases_handeled = request.POST['total_cases_handeled']
+#         currendly_handling = request.POST['currendly_handling']
+#         experience = request.POST['experience']
+#         court = request.POST['court']
+#         # pin = request.POST['pin']
+#         # state = request.POST['state']
+
+#         # working_day_values = request.POST.getlist('working_days')
+#         # working_time_start_id = request.POST['working_time_start']  # Get the selected TimeSlot ID
+#         # working_time_end_id = request.POST['working_time_end']  # Get the selected TimeSlot ID
+#         # budget = request.POST['budget']
+#         # cases_won = request.POST['cases_won']
+#         # cases_lost = request.POST['cases_lost']  # Extract budget, cases_won, and cases_lost from form data
+
+#         # Handle the locations field without using a form
+#         # input_str = request.POST['locations']
+#         # locations = input_str.split(",")
+
+#         if not all([specialization,  address, dob,total_cases_handeled,currendly_handling,experience]):
+#             return HttpResponse("Please fill in all fields.")
+
+#         # Create or update the user's details
+#         user = request.user
+#         user.address = address
+#         user.dob = dob
+#         # user.pin = pin
+#         # user.state = state
+#         user.save()
+#         print("User saved")
+
+#         # Create or update the lawyer profile
+#         lawyer_profile, created = LawyerProfile.objects.get_or_create(user=user)
+#         lawyer_profile.specialization = specialization
+#         # lawyer_profile.start_date = start_date
+#         # lawyer_profile.profile_picture = profile_picture
+#         # lawyer_profile.budget = budget
+#         # lawyer_profile.cases_won = cases_won
+#         # lawyer_profile.cases_lost = cases_lost  # Assign budget, cases_won, and cases_lost
+#         lawyer_profile.total_cases_handeled=total_cases_handeled
+#         lawyer_profile.currendly_handling=currendly_handling
+#         lawyer_profile.experience=experience
+#         lawyer_profile.court = court
+
+#         # # Clear existing working days and set new ones based on selected values
+#         # lawyer_profile.working_days.clear()
+#         # for day_value in working_day_values:
+#         #     day, created = Day.objects.get_or_create(name=day_value)
+#         #     lawyer_profile.working_days.add(day)
+
+#         # # # Retrieve the selected TimeSlot instances based on their IDs
+#         # # working_time_start = get_object_or_404(TimeSlot, id=working_time_start_id)
+#         # # working_time_end = get_object_or_404(TimeSlot, id=working_time_end_id)
+
+#         # # lawyer_profile.working_time_start = working_time_start
+#         # # lawyer_profile.working_time_end = working_time_end
+
+#         # Set the locations field based on the input
+#         # lawyer_profile.locations.set(locations)
+
+#         lawyer_profile.save()
+
+#         # Redirect to a success page or the dashboard
+#         return redirect('lawyer_dashboard')
+#     else:
+#         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
 
     
 def mark_holiday(request):
