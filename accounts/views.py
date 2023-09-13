@@ -16,7 +16,7 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff , HolidayRequest
 from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm ,CustomUserUpdateForm, LawyerProfileUpdateForm
 import markdown
 from django.contrib import messages
@@ -258,7 +258,7 @@ def lawyer_dashboard(request):
         profile = request.user.lawyer_profile
         user = request.user
         # if not all([profile.specialization, profile.start_date, profile.profile_picture, user.address, user.dob, user.pin, user.state, user.phone, profile.working_days, profile.working_time_start, profile.working_time_end]):
-        if not all([profile.specialization, profile.start_date, user.address, user.dob, user.phone,]):
+        if not all([profile.specialization, user.address, user.dob, user.phone,]):
 
             # Redirect to the lawyer_save view if any of the fields are missing
             return redirect('lawyer_save')
@@ -994,6 +994,25 @@ def lawyer_save(request):
 #         return render(request, 'lawyer/user_details_form.html', {'available_time_slots': available_time_slots})
 
     
+# def mark_holiday(request):
+#     if request.method == 'POST':
+#         holiday_date = request.POST.get('holiday_date')
+#         user = request.user  # Get the current user
+
+#         if user.user_type == 'lawyer':
+#             lawyer = user.lawyer_profile  # Access the associated lawyer profile (use 'lawyer_profile' here)
+#             # Check if the date is not already marked as a holiday
+#             if not LawyerDayOff.objects.filter(lawyer=lawyer, date=holiday_date).exists():
+#                 LawyerDayOff.objects.create(lawyer=lawyer, date=holiday_date)
+#                 messages.success(request, 'Holiday marked successfully.')
+#             else:
+#                 messages.warning(request, 'This date is already marked as a holiday.')
+#         else:
+#             messages.error(request, 'Only lawyers can mark holidays.')
+
+#     # return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
+#     return render(request, 'lawyer/mark_holiday.html')
+
 def mark_holiday(request):
     if request.method == 'POST':
         holiday_date = request.POST.get('holiday_date')
@@ -1003,14 +1022,15 @@ def mark_holiday(request):
             lawyer = user.lawyer_profile  # Access the associated lawyer profile (use 'lawyer_profile' here)
             # Check if the date is not already marked as a holiday
             if not LawyerDayOff.objects.filter(lawyer=lawyer, date=holiday_date).exists():
-                LawyerDayOff.objects.create(lawyer=lawyer, date=holiday_date)
-                messages.success(request, 'Holiday marked successfully.')
+                # Create a holiday request
+                holiday_request = HolidayRequest(lawyer=user, date=holiday_date)
+                holiday_request.save()
+                messages.success(request, 'Holiday request sent for review.')
             else:
                 messages.warning(request, 'This date is already marked as a holiday.')
         else:
-            messages.error(request, 'Only lawyers can mark holidays.')
+            messages.error(request, 'Only lawyers can request holidays.')
 
-    # return redirect('lawyer_dashboard')  # Redirect back to the lawyer's dashboard
     return render(request, 'lawyer/mark_holiday.html')
 
 
@@ -1066,25 +1086,27 @@ def update_lawyer_profile(request, user_id):
     if request.method == 'POST':
         # Update user fields if provided in the form, or keep the existing values
         user.address = request.POST.get('address', user.address)
-        user.pin = request.POST.get('pin', user.pin)
-        user.state = request.POST.get('state', user.state)
+        user.phone = request.POST.get('pin', user.phone)
+        
+        # user.state = request.POST.get('state', user.state)
         # Get the choices for the 'state' field
-        state_choices = LawyerProfile.SPECIALIZATIONS
+        # state_choices = LawyerProfile.SPECIALIZATIONS
 
         # Parse the 'locations' input as a list of tags
-        locations_input = request.POST.get('locations', '')
-        locations = [location.strip() for location in locations_input.split(',') if location.strip()]
+        # locations_input = request.POST.get('locations', '')
+        # locations = [location.strip() for location in locations_input.split(',') if location.strip()]
 
-        # Use the 'set()' method to update the working_days M2M field
-        working_days_input = request.POST.getlist('working_days')
-        if working_days_input:
-            lawyer_profile.working_days.set(working_days_input)
+        # # Use the 'set()' method to update the working_days M2M field
+        # working_days_input = request.POST.getlist('working_days')
+        # if working_days_input:
+        #     lawyer_profile.working_days.set(working_days_input)
 
         lawyer_profile.specialization = request.POST.get('specialization', lawyer_profile.specialization)
+        lawyer_profile.court = request.POST.get('court', lawyer_profile.court)
 
-        # If locations are provided in the form, update them; otherwise, keep existing values
-        if locations:
-            lawyer_profile.locations.set(locations)
+        # # If locations are provided in the form, update them; otherwise, keep existing values
+        # if locations:
+        #     lawyer_profile.locations.set(locations)
 
         # Handle profile_picture file upload
         profile_picture = request.FILES.get('profile_picture')
@@ -1149,3 +1171,42 @@ def list_lawyers(request):
     # Render the template
     return render(request, 'lawyerfulllist.html', context)
 
+
+def admin_view_holiday_requests(request):
+    # Check if the user is an admin
+    if not request.user.is_superuser:
+        return redirect('home')  # Redirect to the home page or any other appropriate page
+
+    # Query all pending holiday requests
+    pending_requests = HolidayRequest.objects.filter(status='pending')
+
+    # Render the template with the pending holiday requests data
+    return render(request, 'admin/admin_view_holiday_requests.html', {'pending_requests': pending_requests})
+
+
+def admin_approve_reject_holiday(request, request_id):
+    if request.method == 'POST':
+        # Retrieve the holiday request object by its ID
+        holiday_request = get_object_or_404(HolidayRequest, pk=request_id)
+
+        if request.POST['action'] == 'approve':
+            # If the admin approves the holiday request, mark it as accepted
+            holiday_request.status = 'accepted'
+            holiday_request.save()
+
+            # Get the associated lawyer profile
+            lawyer_profile = holiday_request.lawyer.lawyer_profile
+
+            # Create a LawyerDayOff instance for the approved holiday
+            LawyerDayOff.objects.create(lawyer=lawyer_profile, date=holiday_request.date)
+
+            messages.success(request, 'Holiday request approved successfully.')
+
+        elif request.POST['action'] == 'reject':
+            # If the admin rejects the holiday request, mark it as rejected
+            holiday_request.status = 'rejected'
+            holiday_request.save()
+            messages.success(request, 'Holiday request rejected successfully.')
+
+    # Redirect back to the admin dashboard or any other appropriate view
+    return redirect('admin_dashboard')  # Update this to the appropriate view name

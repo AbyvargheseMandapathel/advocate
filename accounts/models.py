@@ -123,7 +123,16 @@ class LawyerProfile(models.Model):
     specialization = models.CharField(max_length=20, choices=SPECIALIZATIONS,blank=True)
     start_date = models.DateField(null=True)  # Date profession started
     experience = models.IntegerField(blank=True)  # Experience in years
-    profile_picture = models.ImageField(upload_to='uploads/', blank=True, null=True)
+    
+    # Define a default profile picture path
+    DEFAULT_PROFILE_PICTURE_PATH = 'uploads/default_profile_picture.png'
+    
+    profile_picture = models.ImageField(
+        upload_to='uploads/',
+        default=DEFAULT_PROFILE_PICTURE_PATH,  # Set the default profile picture path
+        blank=True,
+        null=True
+    )
     # bar_enrollment_number = models.CharField(max_length=50,blank=True)  # Bar enrollment number
     certificates = models.ManyToManyField('Certificate', blank=True)
     license_no = models.CharField(max_length=30,blank=False)
@@ -268,3 +277,18 @@ class LawyerDayOff(models.Model):
 
     def __str__(self):
         return f"{self.lawyer} - {self.date}"
+    
+    
+class HolidayRequest(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+    )
+
+    lawyer = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    date = models.DateField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return f'{self.lawyer.username} - {self.date} ({self.status})'
