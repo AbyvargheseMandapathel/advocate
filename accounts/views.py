@@ -1016,24 +1016,37 @@ def lawyer_save(request):
 #     return render(request, 'lawyer/mark_holiday.html')
 
 def mark_holiday(request):
-    if request.method == 'POST':
-        holiday_date = request.POST.get('holiday_date')
-        user = request.user  # Get the current user
+    user = request.user  # Get the current user
 
-        if user.user_type == 'lawyer':
-            lawyer = user.lawyer_profile  # Access the associated lawyer profile (use 'lawyer_profile' here)
+    # Check if the user is a lawyer
+    if user.is_authenticated and user.user_type == 'lawyer':
+        lawyer_profile = LawyerProfile.objects.get(user=user)  # Get the associated lawyer profile
+
+        if request.method == 'POST':
+            holiday_date = request.POST.get('holiday_date')
+
             # Check if the date is not already marked as a holiday
-            if not LawyerDayOff.objects.filter(lawyer=lawyer, date=holiday_date).exists():
+            if not HolidayRequest.objects.filter(lawyer=user, date=holiday_date).exists():
                 # Create a holiday request
                 holiday_request = HolidayRequest(lawyer=user, date=holiday_date)
                 holiday_request.save()
                 messages.success(request, 'Holiday request sent for review.')
             else:
                 messages.warning(request, 'This date is already marked as a holiday.')
-        else:
-            messages.error(request, 'Only lawyers can request holidays.')
 
-    return render(request, 'lawyer/mark_holiday.html')
+        # Retrieve holiday requests and their statuses for the logged-in lawyer
+        holiday_requests = HolidayRequest.objects.filter(lawyer=user)
+
+        context = {
+            'holiday_requests': holiday_requests,
+        }
+        return render(request, 'lawyer/mark_holiday.html', context)
+
+    else:
+        messages.error(request, 'Only lawyers can request holidays.')
+        return redirect('home')  # Redirect non-lawyers or unauthenticated users to the home page
+
+    
 
 
 def update_profile(request):
