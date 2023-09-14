@@ -27,6 +27,10 @@ urlpatterns = [
     path('lawyers_list/', views.list_lawyers, name='list_lawyers'),
     path('admin_view_holiday_requests/', views.admin_view_holiday_requests, name='admin_view_holiday_requests'),
     path('admin_approve_reject_holiday/<int:request_id>/', views.admin_approve_reject_holiday, name='admin_approve_reject_holiday'),
+    path('enter_client_email/', views.enter_client_email, name='enter_client_email'),
+    path('enter_case_details/<int:client_id>/<int:lawyer_id>/', views.enter_case_details, name='enter_case_details'),
+    path('case_detail/<int:case_id>/', views.case_detail, name='case_detail'),
+    path('current_cases/', views.current_cases, name='current_cases'),
     # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 

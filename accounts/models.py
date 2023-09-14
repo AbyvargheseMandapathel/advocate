@@ -292,3 +292,52 @@ class HolidayRequest(models.Model):
 
     def __str__(self):
         return f'{self.lawyer.username} - {self.date} ({self.status})'
+    
+    
+class Case(models.Model):
+    CASE_STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    )
+
+    # Auto-generate a unique case number like 1001, 1002, ...
+    case_number = models.CharField(max_length=10, unique=True)
+    client = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='cases', blank=True, null=True)
+
+    # Client information (taken from the CustomUser model)
+    client_name = models.CharField(max_length=100, blank=True)
+    client_email = models.EmailField(blank=True)
+    client_phone = models.CharField(max_length=15, blank=True)
+    client_adhar = models.CharField(max_length=12)
+    client_adhar_photo = models.ImageField(upload_to='aadhar_photos/', blank=True, null=True)
+
+    # Lawyer details associated with the case
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE, related_name='cases', blank=True, null=True)
+
+    # Incident details
+    incident_place = models.CharField(max_length=100)
+    incident_date = models.DateField()
+    incident_time = models.TimeField()
+    witness_name = models.CharField(max_length=100, blank=True)
+    witness_details = models.TextField(blank=True)
+    incident_description = models.TextField()
+
+    # Case status
+    status = models.CharField(max_length=10, choices=CASE_STATUS_CHOICES, default='open')
+
+    def __str__(self):
+        return f"Case {self.case_number} ({self.client_name})"
+    
+    
+from django.db import models
+
+class CurrentCase(models.Model):
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE, related_name='current_cases')
+    case_number = models.CharField(max_length=10)
+    client_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phnno = models.CharField(max_length=15)
+    incident_description = models.TextField()
+
+    def __str__(self):
+        return f"Case {self.case_number} - {self.client_name}"

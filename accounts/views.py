@@ -3,7 +3,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect ,get_object_or_404 ,HttpResponseRedirect
 from django.urls import reverse
-from .models import CustomUser, LawyerProfile  
+from .models import CustomUser, LawyerProfile , CurrentCase  
 from django.http import HttpResponseForbidden , HttpResponseNotFound , HttpResponse
 from django.core.mail import send_mail
 from django.contrib.sites.shortcuts import get_current_site
@@ -16,7 +16,7 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff , HolidayRequest
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff , HolidayRequest , Case
 from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm ,CustomUserUpdateForm, LawyerProfileUpdateForm
 import markdown
 from django.contrib import messages
@@ -31,6 +31,8 @@ import pytz  # Import pytz module
 from django.db.models import Q
 from .forms import UserProfileUpdateForm  # Create a form for profile updates
 from django.core.paginator import Paginator
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 
 
@@ -1210,3 +1212,132 @@ def admin_approve_reject_holiday(request, request_id):
 
     # Redirect back to the admin dashboard or any other appropriate view
     return redirect('admin_dashboard')  # Update this to the appropriate view name
+
+
+@login_required
+def enter_client_email(request):
+    if request.user.user_type != 'lawyer':
+        return render(request, 'sorry.html')
+    
+    lawyer = request.user.lawyer_profile  # Access the associated lawyer profile
+
+    if request.method == 'POST':
+        client_email = request.POST.get('client_email')
+        if client_email:
+            try:
+                # Assuming CustomUser model is used for clients
+                client = CustomUser.objects.get(email=client_email, user_type='client')
+                # Redirect to the case details form with the client's details
+                return redirect('enter_case_details', client_id=client.id, lawyer_id=lawyer.id)
+            except CustomUser.DoesNotExist:
+                messages.error(request, 'Client with the provided email not found.')
+        else:
+            messages.error(request, 'Please enter a valid client email.')
+
+    return render(request, 'lawyer/enter_client_email.html', {'lawyer': lawyer})
+
+@login_required
+def enter_case_details(request, client_id, lawyer_id):
+    # Ensure that only lawyers can access this view
+    if request.user.user_type != 'lawyer':
+        return render(request, 'sorry.html')
+
+    client = get_object_or_404(CustomUser, id=client_id, user_type='client')
+    lawyer = get_object_or_404(LawyerProfile, id=lawyer_id)
+
+    if request.method == 'POST':
+        incident_place = request.POST.get('incident_place')
+        incident_date = request.POST.get('incident_date')
+        incident_time = request.POST.get('incident_time')
+        witness_name = request.POST.get('witness_name')
+        witness_details = request.POST.get('witness_details')
+        incident_description = request.POST.get('incident_description')
+        client_adhar = request.POST.get('client_adhar')
+        client_adhar_photo = request.FILES.get('client_adhar_photo')
+
+        if all([incident_place, incident_date, incident_time, witness_name, incident_description]):
+            # Generate a unique case number
+            case_number = generate_unique_case_number()
+
+            # Create a new Case instance and save it
+            case = Case.objects.create(
+                case_number=case_number,
+                client=client,
+                client_name=client.get_full_name(),
+                client_email=client.email,
+                client_phone=client.phone,
+                incident_place=incident_place,
+                incident_date=incident_date,
+                incident_time=incident_time,
+                witness_name=witness_name,
+                witness_details=witness_details,
+                incident_description=incident_description,
+                client_adhar=client_adhar,
+                client_adhar_photo = client_adhar_photo,
+                lawyer=lawyer,  # Assign the lawyer to the case
+            )
+
+            # Handle saving the Aadhar card photo file
+            if client_adhar_photo:
+                file_name = f'aadhar_photos/{case.id}_{client_adhar_photo.name}'
+                file_content = ContentFile(client_adhar_photo.read())
+                default_storage.save(file_name, file_content)
+
+            messages.success(request, 'Case saved successfully.')
+            return redirect('case_detail', case_id=case.id)
+
+    return render(request, 'lawyer/enter_case_details.html', {'client': client})
+
+def generate_unique_case_number():
+    # Generate a unique case number like 1001, 1002, ...
+    last_case = Case.objects.order_by('-case_number').first()
+    if last_case:
+        last_case_number = int(last_case.case_number)
+        return str(last_case_number + 1)
+    else:
+        return '1001'
+    
+    
+def case_detail(request, case_id):
+    # Retrieve the case object by its ID or return a 404 error if not found
+    case = get_object_or_404(Case, pk=case_id)
+
+    # Render the 'case_detail.html' template with the case object
+    return render(request, 'lawyer/case_detail.html', {'case': case})
+
+
+def current_cases(request):
+    lawyer = request.user.lawyer_profile
+    current_case_count = lawyer.current_cases.count()
+    max_current_cases = lawyer.currendly_handling
+
+    if request.method == 'POST':
+        case_number = request.POST.get('case_number')
+        client_name = request.POST.get('client_name')
+        incident_description = request.POST.get('incident_description')
+
+        if current_case_count < max_current_cases:
+            if all([case_number, client_name, incident_description]):
+                CurrentCase.objects.create(
+                    lawyer=lawyer,
+                    case_number=case_number,
+                    client_name=client_name,
+                    incident_description=incident_description,
+                )
+                messages.success(request, 'Current case added successfully.')
+                return redirect('current_cases')
+            else:
+                messages.error(request, 'All fields are required.')
+        else:
+            messages.warning(request, 'You have reached the maximum number of current cases.')
+
+    current_cases = lawyer.current_cases.all()
+
+    context = {
+        'lawyer': lawyer,
+        'current_cases': current_cases,
+        'current_case_count': current_case_count,
+        'max_current_cases': max_current_cases
+    }
+    
+    return render(request, 'lawyer/current_cases.html', context)
