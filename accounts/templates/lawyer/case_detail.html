@@ -12,22 +12,41 @@
     <link rel="stylesheet" href="{% static 'css/slicknav.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bookings.css' %}">
 
     <!-- icons -->
     <script src="https://kit.fontawesome.com/bc4fa34d4c.js" crossorigin="anonymous"></script>
 
     <title>Case Details</title>
 </head>
+<style>
+    figure img {
+        width: 20em;
+        object-fit: cover;
+    }
 
+    .nav.nav-pills li {
+        width: calc(100% / 3);
+    }
+</style>
 <body>
 
-    {% include 'navigation/navbar.html' %}
+    
 
-    <div class="container py-5">
-        <h1 class="text-center my-5">Booking Details</h1>
-        <div class="row">
-            <div class="col-12">
-                <h3 class="my-3">Client Details</h3>
+    <div id="exTab1" class="container mt-5">
+        <ul class="nav nav-pills">
+            <li class="active">
+                <a href="#1a" data-toggle="tab">Client Details</a>
+            </li>
+            <li><a href="#2a" data-toggle="tab">Incident Details</a>
+            </li>
+            <li><a href="#3a" data-toggle="tab">Case Status</a>
+            </li>
+        </ul>
+
+        <div class="tab-content clearfix position-relative">
+            <!-- content of 1st tab start -->
+            <div class="tab-pane active" id="1a">
                 <div class="data-group">
                     <p>Name</p>
                     <p>Robert James</p>
@@ -40,11 +59,19 @@
                     <p>Email</p>
                     <p>robertjames@gmail.com</p>
                 </div>
+                <div class="data-group">
+                    <p>Adhar Number</p>
+                    <p>3232 7887 3232</p>
+                </div>
+
+                <figure>
+                    <img src="https://www.fisdom.com/wp-content/uploads/2023/06/pvc-aadhaar-card-1.webp" alt="aadhar card">
+                </figure>
             </div>
+            <!-- content of 1st tab end -->
 
-            <div class="col-12">
-                <h3 class="my-3">Incident Details</h3>
-
+            <!-- content of 2nd tab start -->
+            <div class="tab-pane" id="2a">
                 <div class="data-group">
                     <p>Place</p>
                     <p>Kottayam, Kerala</p>
@@ -80,17 +107,21 @@
                     </p>
                 </div>
             </div>
+            <!-- content of 2nd tab end -->
 
-            <div class="col-12">
-                <h3 class="my-3">Case Status</h3>
-
+            <!-- content of 3rd tab start -->
+            <div class="tab-pane" id="3a">
                 <div class="data-group">
                     <p>Status</p>
                     <p>Open <a href="#"><i title="edit status" class="fa-solid fa-pencil ml-2"></i></a></p>
                 </div>
             </div>
+            <!-- content of 3rd tab end -->
         </div>
     </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 
 </html>

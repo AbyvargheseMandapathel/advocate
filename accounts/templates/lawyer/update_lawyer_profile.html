@@ -26,7 +26,7 @@
 
     <div class="container py-5">
         <h1 class="text-center my-5 heading-1">Update Details</h1>
-        <form method="post" enctype="multipart/form-data" action="{% url 'update_lawyer_profile' user_id=user.id %}">
+        <form method="post" enctype="multipart/form-data" action="{% url 'update_lawyer_profile' user_id=user.id %}" onsubmit="return confirmSubmit();">
           {% csrf_token %}
             <div class="row">
                 <div class="col-md-5 profile-pic-col">
@@ -104,6 +104,14 @@
         reader.readAsDataURL(fileInput.files[0]);
     }
 });
+
+function confirmSubmit() {
+    // Display a confirmation dialog
+    var confirmation = confirm("Are you sure you want to submit this form?");
+    
+    // If the user clicks "OK," the form will be submitted
+    return confirmation;
+}
 
     </script>
 </body>

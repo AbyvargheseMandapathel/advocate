@@ -124,7 +124,7 @@
                             <th class="text-center">Lawyer</th>
                             <th class="text-center">Date</th>
                             <th class="text-center">Status</th>
-                            <th class="text-center">Action</th>
+                            <th class="text-center"></th>
                         </tr>
                     </thead>
 
@@ -141,26 +141,17 @@
                                 <button class="btn btn-outline-danger" type="submit" name="action" value="reject">Reject</button>
                             </td>
                         </tr>
-                        {% empty %}
-                <tr>
-                    <td colspan="4">No pending holiday requests available.</td>
-                </tr>
-                        {% endfor %}
+                        {% endfor %}  
                     </tbody>
 
-                    <tfoot>
-                        <tr>
-                            <th class="text-center">Lawyer</th>
-                            <th class="text-center">Date</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </tfoot>
+                    
                 </table>
             </div>
         </div>
     </div>
     
+                
+                    
     <script>
         new DataTable('#example');
 
