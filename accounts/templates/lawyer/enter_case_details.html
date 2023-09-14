@@ -22,25 +22,26 @@
     
 
     <div class="container py-5">
-        <h1 class="text-center">Incident Details Registration</h1>
+        <h1 class="text-center">Enter Case Details for {{ client.client_name }}</h1>
 
         <div class="row">
             <div class="col-12 add-user-col d-flex justify-content-center">
-                <form class="add-user-form">
-                    
+                <form class="add-user-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}  
+                    <input type="hidden" name="client_id" value="{{ client.id }}">
                     <div class="input-group">
                         <label for="place">Incident Place</label>
-                        <input type="text" name="place" required />
+                        <input type="text" name="incident_place" value="{{ incident_place }}" required />
                     </div>
 
                     <div class="input-group">
                         <label for="date">Incident Date</label>
-                        <input type="date" name="date" required />
+                        <input type="date" name="incident_date" required />
                     </div>
 
                     <div class="input-group">
                         <label for="time">Incident Time</label>
-                        <input type="time" name="time" required />
+                        <input type="time" name="incident_time" required />
                     </div>
 
                     <div class="input-group">
@@ -55,18 +56,18 @@
 
                     <div class="input-group">
                         <label for="incident_desc">Incident Desciption</label>
-                        <textarea name="incident_desc" cols="30" rows="10"></textarea>
+                        <textarea name="incident_description" cols="30" rows="10"></textarea>
                     </div>
 
                     <div class="input-group">
                         <label for="aadhar_no">Client AAdhar Number</label>
-                        <input type="number" name="aadhar_no" required />
+                        <input type="number" name="client_adhar" required />
                     </div>
 
                     <div class="input-group">
                         <label for="aadhar_img">Client Aadhar Photo</label>
                         <div class="profile-img-preview"></div>
-                        <input type="file" name="aadhar_img" id="aadhar_img" accept=".jpg, .jpeg, .png" required />
+                        <input type="file" name="client_adhar_photo" id="client_adhar_photo" accept=".jpg, .jpeg, .png" required />
                     </div>
 
                     <div class="input-group">

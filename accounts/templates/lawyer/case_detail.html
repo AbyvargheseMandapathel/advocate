@@ -28,7 +28,13 @@
     .nav.nav-pills li {
         width: calc(100% / 3);
     }
+
+    .inline-data {
+        display: flex;
+        justify-content: space-between;
+    }
 </style>
+
 <body>
 
     
@@ -47,63 +53,69 @@
         <div class="tab-content clearfix position-relative">
             <!-- content of 1st tab start -->
             <div class="tab-pane active" id="1a">
-                <div class="data-group">
-                    <p>Name</p>
-                    <p>Robert James</p>
-                </div>
-                <div class="data-group">
-                    <p>Phone</p>
-                    <p>90899372834</p>
-                </div>
-                <div class="data-group">
-                    <p>Email</p>
-                    <p>robertjames@gmail.com</p>
-                </div>
-                <div class="data-group">
-                    <p>Adhar Number</p>
-                    <p>3232 7887 3232</p>
+                <div class="inline-data">
+                    <div class="data-group">
+                        <p>Case Number</p>
+                        <p>CS/{{ case.case_number }}</p>
+                    </div>
+                    <div class="data-group">
+                        <p>Name</p>
+                        <p>{{ case.client_name }}</p>
+                    </div>
+                    <div class="data-group">
+                        <p>Phone</p>
+                        <p>{{ case.client_phone }}</p>
+                    </div>
+                    <div class="data-group">
+                        <p>Email</p>
+                        <p>{{ case.client_email }}</p>
+                    </div>
+                    <div class="data-group">
+                        <p>Adhar Number</p>
+                        <p>{{ case.client_adhar }}</p>
+                    </div>
                 </div>
 
                 <figure>
-                    <img src="https://www.fisdom.com/wp-content/uploads/2023/06/pvc-aadhaar-card-1.webp" alt="aadhar card">
+                    <img src="{{ case.client_adhar_photo.url }}"
+                        alt="aadhar card">
                 </figure>
             </div>
             <!-- content of 1st tab end -->
 
             <!-- content of 2nd tab start -->
             <div class="tab-pane" id="2a">
-                <div class="data-group">
-                    <p>Place</p>
-                    <p>Kottayam, Kerala</p>
-                </div>
+                <div class="inline-data">
+                    <div class="data-group">
+                        <p>Place</p>
+                        <p>{{ case.incident_place }}</p>
+                    </div>
 
-                <div class="data-group">
-                    <p>Date</p>
-                    <p>12 Oct 2023</p>
-                </div>
+                    <div class="data-group">
+                        <p>Date</p>
+                        <p>{{ case.incident_date }}</p>
+                    </div>
 
-                <div class="data-group">
-                    <p>Time</p>
-                    <p>12 30 PM</p>
-                </div>
+                    <div class="data-group">
+                        <p>Time</p>
+                        <p>{{ case.incident_time }}</p>
+                    </div>
 
-                <div class="data-group">
-                    <p>Name of witness</p>
-                    <p>Aby Varghese</p>
-                </div>
+                    <div class="data-group">
+                        <p>Name of witness</p>
+                        <p>{{ case.witness_name }}</p>
+                    </div>
 
-                <div class="data-group">
-                    <p>Address of witness</p>
-                    <p>Kattachira, Kottayam</p>
+                    <div class="data-group">
+                        <p>Address of witness</p>
+                        <p>{{ case.witness_details }}</p>
+                    </div>
                 </div>
 
                 <div class="data-group">
                     <p>Description</p>
                     <p>
-                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Numquam sapiente necessitatibus
-                        impedit ratione eos itaque error voluptatum, consectetur aliquam recusandae atque illum
-                        provident cumque, voluptate earum in perferendis sit unde consequuntur? Fugiat architecto
-                        incidunt repudiandae.
+                        {{ case.incident_description }}
                     </p>
                 </div>
             </div>
@@ -113,7 +125,7 @@
             <div class="tab-pane" id="3a">
                 <div class="data-group">
                     <p>Status</p>
-                    <p>Open <a href="#"><i title="edit status" class="fa-solid fa-pencil ml-2"></i></a></p>
+                    <p>{{ case.status }} <a href="#"><i title="edit status" class="fa-solid fa-pencil ml-2"></i></a></p>
                 </div>
             </div>
             <!-- content of 3rd tab end -->
