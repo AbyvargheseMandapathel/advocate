@@ -142,36 +142,22 @@
                 <a href="{% url 'enter_client_email' %}">
                     <h6 style="padding: 0; margin: 0;">Add Case</h6></a>
             </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa hammer-">{{case_count}}</i>
+                <button>
+                    <a href="{% url 'list_cases' %}"><h6 style="padding: 0; margin: 0;">Cases</h6></a>
+                </button>
+            </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa hammer-"></i>
+                <button>
+                    <a href="{% url 'current_cases' %}"><h6 style="padding: 0; margin: 0;">Current Cases</h6></a>
+                </button>
+            </div>
         </div>
         <!-- dashboard top buttons end -->
-        <div class="container mt-5">
-            <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Details</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for booking in bookings %}
-                    <tr>
-                      <td>{{ booking.user.email }}</td>
-                      <td>{{ booking.details }}</td>
-                      <td>
-                        <a href="{% url 'booking_details' booking.id %}" class="btn btn-primary">View Details</a>
-                      </td>
-                    </tr>
-                  {% empty %}
-                    <tr>
-                      <td colspan="3">No bookings available.</td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <a href="{% url 'current_cases' %}">Current Cases</a>
+        
+          
 
           
 </body>

@@ -194,6 +194,7 @@ def admin_dashboard(request):
         booking_count = Booking.objects.count()
         internship_count = Internship.objects.count()
         students_count = Student.objects.count()
+        cases_count = Case.objects.count()
         
         
         # Retrieve the recent 5 bookings, ordered by pk in descending order (greatest to smallest)
@@ -207,7 +208,8 @@ def admin_dashboard(request):
             'booking_count':booking_count,
             'recent_queries': recent_queries,
             'internship_count': internship_count,
-            'students_count':students_count
+            'students_count':students_count,
+            'cases_count': cases_count,
             }
             
         
@@ -271,8 +273,9 @@ def lawyer_dashboard(request):
 
         # Count the number of bookings for this lawyer
         booking_count = Booking.objects.filter(lawyer=lawyer_profile).count()
+        case_count = Case.objects.filter(lawyer=lawyer_profile).count()
         
-        return render(request, 'lawyer/dashboard.html', {'user': request.user, 'booking_count': booking_count,'bookings': bookings})
+        return render(request, 'lawyer/dashboard.html', {'user': request.user, 'booking_count': booking_count,'bookings': bookings , 'case_count': case_count})
     else:
         return render(request, '404.html')
 
@@ -1354,3 +1357,18 @@ def current_cases(request):
     }
     
     return render(request, 'lawyer/current_cases.html', context)
+
+
+def list_cases(request):
+    user_type = request.user.user_type  # Assuming you have 'user_type' set in your CustomUser model
+    
+    if user_type == 'lawyer':
+        cases = Case.objects.filter(lawyer=request.user.lawyer_profile)
+    elif user_type == 'client':
+        cases = Case.objects.filter(client=request.user)
+    elif user_type == 'admin':
+        cases = Case.objects.all()
+    else:
+        cases = None
+
+    return render(request, 'case_list.html', {'cases': cases})

@@ -115,10 +115,12 @@
 
     <div class="container py-5">
         <h1 class="text-center">Current Cases For You</h1>
-
+ 
         <div class="row">
             <div class="col-12 add-user-col d-flex justify-content-center">
-                <form class="add-user-form">
+                {% if current_case_count < max_current_cases %}
+                <form class="add-user-form" method="post">
+                    {% csrf_token %}
                     <h3 class="text-center my-4">Add Current Case</h3>
 
                     <div class="input-group">
@@ -128,18 +130,19 @@
 
                     <div class="input-group">
                         <label for="name">Client Name</label>
-                        <input type="text" name="name" required />
+                        <input type="text" name="client_name" required />
                     </div>
 
                     <div class="input-group">
-                        <label for="client_details">Client Details</label>
-                        <textarea name="client_details" cols="30" rows="10"></textarea>
+                        <label for="incident_description">Incident Details</label>
+                        <textarea name="incident_description" cols="30" rows="10"></textarea>
                     </div>
 
                     <div class="input-group">
                         <button class="btn btn-warning" type="submit">Save Case</button>
                     </div>
                 </form>
+                {% endif %}
             </div>
         </div>
 
@@ -147,33 +150,29 @@
         <div class="row">
             <div class="col-12">
                 <h3 class="text-center my-5">Current Cases</h3>
+                
                 <table id="example" class="table table-striped" style="width:100%">
+                    
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Date</th>
+                            <th>number</th>
+                            <th>name</th>
+                            <th>Details</th>
+                            
                         </tr>
                     </thead>
 
                     <tbody>
+                        {% for current_case in current_cases %}
                         <tr>
-                            <td>Tiger Nixon</td>
-                            <td>System Architect</td>
-                            <td>61</td>
-                            <td>2011-04-25</td>
+                            <td>CS/{{ current_case.case_number }}</td>
+                            <td>{{ current_case.client_name }}</td>
+                            <td>{{ current_case.incident_details }}</td>
                         </tr>
+                        {% endfor %}
                     </tbody>
 
-                    <tfoot>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Time Slot</th>
-                        </tr>
-                    </tfoot>
+                  
                 </table>
             </div>
         </div>

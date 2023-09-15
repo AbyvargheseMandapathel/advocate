@@ -154,6 +154,12 @@
                     <a href="{% url 'add_lawyer' %}"><h6 style="padding: 0; margin: 0;">Add Lawyer</h6></a>
                 </button>
             </div>
+            <div class="col-sm-3 mt-3 dashboard-top-buttons">
+                <i class="fa-solid fa hammer-">{{cases_count}}</i>
+                <button>
+                    <a href="{% url 'list_cases' %}"><h6 style="padding: 0; margin: 0;">Cases</h6></a>
+                </button>
+            </div>
         </div>
         <!-- dashboard top buttons end -->
 

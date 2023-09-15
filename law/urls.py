@@ -31,6 +31,7 @@ urlpatterns = [
     path('enter_case_details/<int:client_id>/<int:lawyer_id>/', views.enter_case_details, name='enter_case_details'),
     path('case_detail/<int:case_id>/', views.case_detail, name='case_detail'),
     path('current_cases/', views.current_cases, name='current_cases'),
+    path('list_cases/', views.list_cases, name='list_cases'),
     # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 
