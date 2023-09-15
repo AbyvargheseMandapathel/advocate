@@ -1300,7 +1300,8 @@ def enter_case_details(request, client_id, lawyer_id):
                 default_storage.save(file_name, file_content)
 
             messages.success(request, 'Case saved successfully.')
-            return redirect('case_detail', case_id=case.id)
+            # return redirect('case_detail', case_id=case.id)
+            return render(request, 'case_saved.html')
 
     return render(request, 'lawyer/enter_case_details.html', {'client': client})
 
