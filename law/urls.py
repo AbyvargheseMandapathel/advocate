@@ -34,6 +34,7 @@ urlpatterns = [
     path('list_cases/', views.list_cases, name='list_cases'),
     path('set_working_hours/', views.set_working_hours, name='set_working_hours'),
     path('update_working_hours/', views.update_working_hours, name='update_working_hours'),
+    path('get_available_time_slots/', views.get_available_time_slots, name='get_available_time_slots'),
     # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 

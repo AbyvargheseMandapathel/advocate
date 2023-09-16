@@ -1,132 +1,84 @@
-{% load static %}
+<h1>Book a Lawyer</h1>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<form id="booking-form" method="POST">
+    {% csrf_token %}
+    
+    <label for="booking_date">Select Booking Date:</label>
+    <input type="date" id="booking_date" name="booking_date" required>
+    
+    <label for="time_slot">Select Time Slot:</label>
+    <select id="time_slot" name="time_slot" required>
+        <!-- Time slot options will be populated dynamically using JavaScript -->
+    </select>
+    
+    <label for="details">Booking Details:</label>
+    <textarea id="details" name="details" required></textarea>
+    
+    <button type="submit">Book</button>
+</form>
+<script>
+    // Function to fetch available time slots based on the selected date
+    function fetchAvailableTimeSlots() {
+        // Get the selected booking date
+        const bookingDate = document.getElementById('booking_date').value;
 
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/owl.carousel.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
-    <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/themify-icons.css' %}">
-    <link rel="stylesheet" href="{% static 'css/nice-select.css' %}">
-    <link rel="stylesheet" href="{% static 'css/flaticon.css' %}">
-    <link rel="stylesheet" href="{% static 'css/flaticon.css' %}">
-    <link rel="stylesheet" href="{% static 'css/gijgo.css' %}">
-    <link rel="stylesheet" href="{% static 'css/slicknav.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/add_lawyer.css' %}">
+        // Make an AJAX request to the server to fetch time slots
+        fetch(`/api/available_time_slots/?date=${bookingDate}`)
+            .then(response => response.json())
+            .then(data => {
+                // Get the time slot select element
+                const timeSlotSelect = document.getElementById('time_slot');
 
-    <title>Book {{ lawyer.user.get_full_name }}</title>
-</head>
-<body>
-    <header>
-        <div class="header-area ">
-            <div id="sticky-header" class="main-header-area">
-                <div class="container-fluid p-0">
-                    <div class="row align-items-center justify-content-between no-gutters">
-                        <div class="col-xl-2 col-lg-2">
-                            <div class="logo-img">
-                                <a href="index.html">
-                                    <img src="{% static 'img\icon.ico' %}" alt=""width="120">
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-xl-7 col-lg-8">
-                            <div class="main-menu  d-none d-lg-block">
-                                <nav>
-                                    <ul id="navigation">
-                                        <li><a class="active" href="{% url 'home' %}">home</a></li>
-                                        <li><a href="{% url 'about' %}">About</a></li>
-                                        <li><a href="{% url 'contact' %}">Contact</a></li>
-                                        <li><a href="{% url 'practice' %}">Practice Area</a></li> 
-                                        <li><a href="#">Services<i class="ti-angle-down"></i></a>
-                                            <ul class="submenu">
-                                                <li><a href="{% url 'lawyer_list' %}">Lawyer</a></li>
-                                                
-                                                {% if user.user_type == 'admin' %}
-                                                <li><a href="{% url 'add_lawyer' %}">Add Lawyer</a></li>
-                                                {% endif %}
-                                            </ul>
-                                            
-                                        </li>
-                                        {% if user.is_authenticated %}
-                                        <li>
-                                            <a href="#">Welcome {{ user.first_name }}<i class="ti-angle-down"></i></a>
-                                            <ul class="submenu">
-                                                {% if user.user_type == 'admin' %}
-                                                <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>                                                {% endif %}
-                                                <li><a href="{% url 'logout' %}">Logout</a></li>
-                                            </ul>
-                                        </li>
-                                        {% else %}
-                                        
-                                        <li><a href="{% url 'signup' %}">Signup</a></li>
-                                        <li><a href="{% url 'login' %}">Login</a></li>
-                                        {% endif %}
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-    <!-- header-end -->
-    <div class="container py-5">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-center">Book Advocate</h1>
+                // Clear existing options
+                timeSlotSelect.innerHTML = '';
 
-                <h4 class="text-center my-3">
-                    <img src="{% static 'img/adv-logo.png' %}" width="25px" alt="">
-                    {{ lawyer.user.get_full_name }}
-                </h4>
-                
-                <div class="mt-5">
-                    <form method="post">
-                        {% csrf_token %}
+                // Populate the select element with fetched time slots
+                data.forEach(slot => {
+                    const option = document.createElement('option');
+                    option.value = slot.id;
+                    option.text = slot.slot;
+                    timeSlotSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching time slots:', error);
+            });
+    }
 
-                        <div class="input-row">
-                            <div class="input-group">
-                                <label for="{{ form.details.id_for_label }}">Booking Details:</label>
-                                {{ form.details }}
-                            </div>
-                        </div>
-                        
-                        <div class="input-row mt-3">
-                            <div class="input-group">
-                                <label for="{{ form.booking_date.id_for_label }}">Booking Date:</label>
-                                {{ form.booking_date }}
-                            </div>
-                        </div>
-                        
-                        <div class="input-row mt-3">
-                            <div class="input-group">
-                                <label for="{{ form.time_slot.id_for_label }}">Time Slot:</label>
-{{ form.time_slot }}
-                            </div>
-                        </div>
-                        
-                        <div class="input-row mt-3">
-                            <div class="input-group">
-                                <button type="submit" class="btn btn-warning text-white" style="width: 100%;">Book Now</button>
-                            </div>
-                        </div>
-                    </form>
-                    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
+    // Attach an event listener to the booking date input
+    document.getElementById('booking_date').addEventListener('change', fetchAvailableTimeSlots);
+
+    // Initial fetch when the page loads
+    fetchAvailableTimeSlots();
+
+    // Handle form submission with AJAX
+    document.getElementById('booking-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        // Get form data
+        const formData = new FormData(this);
+
+        // Make an AJAX request to book the lawyer
+        fetch('/book_lawyer/7/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,  // Replace with the actual CSRF token
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Booking successful, you can redirect or display a success message
+                    alert('Booking successful!');
+                    window.location.href = '/';  // Redirect to home page
+                } else if (data.error) {
+                    // Display error message
+                    document.getElementById('error-message').textContent = data.error;
+                }
+            })
+            .catch(error => {
+                console.error('Error booking lawyer:', error);
+            });
+    });
+</script>

@@ -180,6 +180,16 @@ class LawyerProfile(models.Model):
     # working_time_start = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_start_time')
     # working_time_end = models.ForeignKey(TimeSlot, on_delete=models.SET_NULL, null=True, blank=True, related_name='lawyer_end_time')
 
+    def get_working_days(self):
+        # Assuming you have a field named 'working_days' that stores the working days for the lawyer
+        # You might store working days as integers (e.g., 1 for Monday, 2 for Tuesday, etc.)
+        working_days = self.working_days.all()
+        return working_days
+
+    def get_day_off_dates(self):
+        # Assuming you have a related field 'day_off_dates' that stores specific day-off dates for the lawyer
+        day_off_dates = self.day_off_dates.all()
+        return day_off_dates
     
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.specialization}"
@@ -246,6 +256,21 @@ class ContactEntry(models.Model):
 
     
     
+# class Booking(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+#     lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
+#     details = models.TextField()
+#     booking_date = models.DateField()
+#     time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
+#     status = models.CharField(max_length=20, default="pending")
+#     original_booking_date = models.DateField(null=True, blank=True)
+
+#     def is_confirmed(self):
+#         return self.status == "confirmed"
+
+#     def __str__(self):
+#         return self.user.email
+
 class Booking(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
@@ -260,6 +285,13 @@ class Booking(models.Model):
 
     def __str__(self):
         return self.user.email
+    
+class Appointment(models.Model):
+    client = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
+    date = models.DateField()
+    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE)
+    is_confirmed = models.BooleanField(default=False)
     
 class Student(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
@@ -368,3 +400,8 @@ class CurrentCase(models.Model):
 
     def __str__(self):
         return f"Case {self.case_number} - {self.client_name}"
+    
+class AvailableTimeSlot(models.Model):
+    lawyer = models.ForeignKey(LawyerProfile, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.TimeField()

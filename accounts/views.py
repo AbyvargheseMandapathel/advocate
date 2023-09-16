@@ -16,7 +16,7 @@ from django.utils.http import urlsafe_base64_decode
 from .forms import CustomPasswordResetForm  
 from django.core.exceptions import ValidationError
 from datetime import datetime
-from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff , HolidayRequest , Case
+from .models import LawyerProfile , ContactEntry , Internship , Student , Application , Booking , Day ,TimeSlot , LawyerDayOff , HolidayRequest , Case , Appointment
 from .forms import ContactForm , BookingForm , InternshipForm , BookingStatusForm ,CustomUserUpdateForm, LawyerProfileUpdateForm
 import markdown
 from django.contrib import messages
@@ -33,6 +33,8 @@ from .forms import UserProfileUpdateForm  # Create a form for profile updates
 from django.core.paginator import Paginator
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.http import JsonResponse
+
 
 
 
@@ -503,60 +505,82 @@ def book_lawyer(request, lawyer_id):
     user = request.user
 
     if request.method == 'POST':
-        form = BookingForm(request.POST, lawyer=lawyer)
+        booking_date = request.POST.get('booking_date')
+        time_slot_id = request.POST.get('time_slot')
 
-        if form.is_valid():
-            booking_date = form.cleaned_data['booking_date']
-            
+        if booking_date and time_slot_id:
+            try:
+                booking_date = timezone.datetime.strptime(booking_date, '%Y-%m-%d').date()
+                selected_time_slot = TimeSlot.objects.get(pk=time_slot_id)
+            except (ValueError, TimeSlot.DoesNotExist):
+                return JsonResponse({'error': 'Invalid date or time slot.'}, status=400)
+
             # Check if the booking date is in the future
             if booking_date <= timezone.localdate():
-                messages.error(request, 'You can only book for future dates.')
-            else:
-                selected_day = booking_date.weekday() + 1
+                return JsonResponse({'error': 'You can only book for future dates.'}, status=400)
 
-                if not lawyer.working_days.filter(name=selected_day).exists():
-                    messages.error(request, 'This lawyer does not work on the selected day.')
-                else:
-                    # Check if the selected date is marked as a day off for the lawyer
-                    if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
-                        messages.error(request, 'This date is marked as a day off for the lawyer.')
-                    else:
-                        # Continue with booking logic
-                        booking = form.save(commit=False)
-                        booking.user = user
-                        booking.lawyer = lawyer
-                        booking.status = 'pending'
-                        
-                        # Assign the selected TimeSlot instance to the booking
-                        selected_time_slot = form.cleaned_data['time_slot']
-                        booking.time_slot = selected_time_slot
-                        
-                        # Check for existing bookings and user's existing bookings (as previously implemented)
-                        existing_booking = Booking.objects.filter(
-                            lawyer=lawyer,
-                            booking_date=booking.booking_date,
-                            time_slot=selected_time_slot,
-                        ).exclude(status='canceled').first()
+            selected_day = booking_date.weekday() + 1
 
-                        user_existing_booking = Booking.objects.filter(
-                            user=user,
-                            booking_date=booking.booking_date,
-                            time_slot=selected_time_slot,
-                        ).exclude(status='canceled').first()
+            if not lawyer.working_days.filter(name=selected_day).exists():
+                return JsonResponse({'error': 'This lawyer does not work on the selected day.'}, status=400)
 
-                        if existing_booking:
-                            messages.error(request, 'This time slot is already booked by another user.')
-                        elif user_existing_booking:
-                            messages.error(request, 'You have already booked a lawyer at this time slot.')
-                        else:
-                            booking.save()
-                            # Redirect to a success page or display a success message
-                            return redirect('home')
-    else:
-        form = BookingForm(lawyer=lawyer)
+            if LawyerDayOff.objects.filter(lawyer=lawyer, date=booking_date).exists():
+                return JsonResponse({'error': 'This date is marked as a day off for the lawyer.'}, status=400)
 
-    return render(request, 'book_lawyer.html', {'form': form, 'lawyer': lawyer})
+            # Continue with booking logic
+            existing_booking = Booking.objects.filter(
+                lawyer=lawyer,
+                booking_date=booking_date,
+                time_slot=selected_time_slot,
+            ).exclude(status='canceled').first()
 
+            user_existing_booking = Booking.objects.filter(
+                user=user,
+                booking_date=booking_date,
+                time_slot=selected_time_slot,
+            ).exclude(status='canceled').first()
+
+            if existing_booking:
+                return JsonResponse({'error': 'This time slot is already booked by another user.'}, status=400)
+            elif user_existing_booking:
+                return JsonResponse({'error': 'You have already booked a lawyer at this time slot.'}, status=400)
+
+            num_bookings = Booking.objects.filter(
+                lawyer=lawyer,
+                booking_date=booking_date,
+                time_slot=selected_time_slot,
+            ).exclude(status='canceled').count()
+
+            if num_bookings >= 8:
+                return JsonResponse({'error': 'This time slot is fully booked.'}, status=400)
+
+            booking = Booking(
+                user=user,
+                lawyer=lawyer,
+                details=request.POST.get('details'),
+                booking_date=booking_date,
+                time_slot=selected_time_slot,
+                status='pending',
+                original_booking_date=timezone.now().date(),
+            )
+            booking.save()
+            
+            return JsonResponse({'success': 'Booking successful!'}, status=200)
+
+    # Render the booking form
+    return render(request, 'book_lawyer.html', {'lawyer': lawyer})
+
+def get_available_time_slots(request):
+    booking_date = request.GET.get('booking_date')
+    lawyer_id = request.GET.get('lawyer_id')
+
+    # Query the available time slots based on the date and lawyer
+    available_slots = AvailableTimeSlot.objects.filter(
+        lawyer_id=lawyer_id,
+        date=booking_date,
+    ).values('id', 'time')
+
+    return JsonResponse({'available_time_slots': list(available_slots)})
 # def reschedule_appointment(request, booking_id):
 #     # Get the booking object for the provided booking_id
 #     booking = get_object_or_404(Booking, pk=booking_id)

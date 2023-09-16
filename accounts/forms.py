@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import SetPasswordForm
-from .models import Booking ,Internship ,LawyerProfile, TimeSlot ,CustomUser
+from .models import Booking ,Internship ,LawyerProfile, TimeSlot ,CustomUser , Appointment
 from datetime import timedelta ,datetime
 
 
@@ -22,27 +22,39 @@ class ContactForm(forms.Form):
     subject = forms.CharField(max_length=100)
     message = forms.CharField(widget=forms.Textarea)
     
+# class BookingForm(forms.ModelForm):
+#     class Meta:
+#         model = Booking
+#         fields = ['details', 'booking_date', 'time_slot']
+
+#     booking_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+#     time_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.none())  # Use ModelChoiceField
+
+#     def __init__(self, *args, **kwargs):
+#         lawyer = kwargs.pop('lawyer', None)
+#         super().__init__(*args, **kwargs)
+        
+#         if lawyer:
+#             # Convert lawyer's working end time to datetime.datetime and subtract 1 hour
+#             end_time = datetime.combine(datetime.today(), lawyer.working_time_end.start_time) - timedelta(hours=1)
+            
+#             available_time_slots = TimeSlot.objects.filter(
+#                 start_time__gte=lawyer.working_time_start.start_time,
+#                 start_time__lt=end_time.time(),  # Convert back to datetime.time
+#             )
+#             self.fields['time_slot'].queryset = available_time_slots
+
 class BookingForm(forms.ModelForm):
     class Meta:
         model = Booking
         fields = ['details', 'booking_date', 'time_slot']
 
-    booking_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    time_slot = forms.ModelChoiceField(queryset=TimeSlot.objects.none())  # Use ModelChoiceField
+    def __init__(self, *args, lawyer=None, **kwargs):
+        super(BookingForm, self).__init__(*args, **kwargs)
 
-    def __init__(self, *args, **kwargs):
-        lawyer = kwargs.pop('lawyer', None)
-        super().__init__(*args, **kwargs)
-        
+        # You can customize the time_slot queryset based on the lawyer here
         if lawyer:
-            # Convert lawyer's working end time to datetime.datetime and subtract 1 hour
-            end_time = datetime.combine(datetime.today(), lawyer.working_time_end.start_time) - timedelta(hours=1)
-            
-            available_time_slots = TimeSlot.objects.filter(
-                start_time__gte=lawyer.working_time_start.start_time,
-                start_time__lt=end_time.time(),  # Convert back to datetime.time
-            )
-            self.fields['time_slot'].queryset = available_time_slots
+            self.fields['time_slot'].queryset = lawyer.get_available_time_slots()
           
         
 class InternshipForm(forms.ModelForm):
@@ -94,6 +106,11 @@ class LawyerProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['profile_picture'].widget.attrs.update({'class': 'profile_picture'})
+        
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['date', 'time_slot']
 
     
     
