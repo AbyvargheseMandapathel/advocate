@@ -173,18 +173,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS=[os.path.join(BASE_DIR,'static')]
 
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'FIELDS': ['id', 'email'],
-        'APP': {
-            'client_id': '803911158543-8o1lh058ran1bs20qbsmfo9i096gsbuc.apps.googleusercontent.com',
-            'secret': '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',
-            'key': ''
-        }
-    }
-}
+
 
 MEDIA_URL = ''
 MEDIA_ROOT = os.path.join(BASE_DIR, '')
@@ -193,8 +182,7 @@ SESSION_COOKIE_AGE = 3600
 SESSION_SAVE_EVERY_REQUEST = True
 
 
-RAZOR_KEY_ID = "rzp_test_0RqoFNB1wQWTP7"
-RAZOR_KEY_SECRET = "JvPq7n1qGkKoo79ay2Fep5MR"
+
 
 
 
