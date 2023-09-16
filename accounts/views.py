@@ -1373,3 +1373,74 @@ def list_cases(request):
         cases = None
 
     return render(request, 'case_list.html', {'cases': cases})
+
+def set_working_hours(request):
+    lawyer = request.user.lawyer_profile
+
+    if request.method == 'POST':
+        selected_slots = request.POST.getlist('working_hours')
+
+        # Get the lawyer's existing working hours
+        existing_working_hours = lawyer.working_hours.all()
+
+        # Convert the existing working hours to a list of (day, slot) tuples
+        existing_hours = [(slot.day, slot.slot) for slot in existing_working_hours]
+
+        # Iterate through selected slots and add or remove them as needed
+        for slot in selected_slots:
+            day, slot_value = slot.split('|')
+            if (day, slot_value) not in existing_hours:
+                # Slot is selected but not in existing hours, so add it
+                time_slot = TimeSlot.objects.get(day=day, slot=slot_value)
+                lawyer.working_hours.add(time_slot)
+            else:
+                # Slot is selected and already in existing hours, so remove it
+                time_slot = existing_working_hours.get(day=day, slot=slot_value)
+                lawyer.working_hours.remove(time_slot)
+
+        lawyer.save()
+        return redirect('home')
+
+    day_choices = TimeSlot.DAY_CHOICES
+    time_slots = TimeSlot.objects.all()
+
+    # Get the lawyer's existing working hours
+    existing_working_hours = lawyer.working_hours.values_list('day', 'slot')
+
+    return render(request, 'lawyer/working_hours_form.html', {'day_choices': day_choices, 'time_slots': time_slots, 'existing_working_hours': existing_working_hours})
+
+def format_working_hours(lawyer):
+    working_hours = lawyer.working_hours.all()
+    formatted_hours = []
+
+    for hour in working_hours:
+        formatted_hours.append(f"{hour.day} - {hour.get_slot_display()}")
+
+    return formatted_hours
+
+def update_working_hours(request):
+    lawyer = request.user.lawyer_profile
+
+    if request.method == 'POST':
+        selected_slots = request.POST.getlist('working_hours')
+
+        # Clear the lawyer's existing working hours
+        lawyer.working_hours.clear()
+
+        # Iterate through selected slots and add them to the lawyer's working hours
+        for slot in selected_slots:
+            day, slot_value = slot.split('|')
+            time_slot = TimeSlot.objects.get(day=day, slot=slot_value)
+            lawyer.working_hours.add(time_slot)
+
+        lawyer.save()
+        return redirect('home')  # Redirect to the lawyer's profile page
+
+    day_choices = TimeSlot.DAY_CHOICES
+    time_slots = TimeSlot.objects.all()
+
+    # Get the lawyer's existing working hours
+    existing_working_hours = lawyer.working_hours.all()
+
+    return render(request, 'lawyer/update_working_hours.html', {'day_choices': day_choices, 'time_slots': time_slots, 'existing_working_hours': existing_working_hours})
+

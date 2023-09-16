@@ -32,6 +32,8 @@ urlpatterns = [
     path('case_detail/<int:case_id>/', views.case_detail, name='case_detail'),
     path('current_cases/', views.current_cases, name='current_cases'),
     path('list_cases/', views.list_cases, name='list_cases'),
+    path('set_working_hours/', views.set_working_hours, name='set_working_hours'),
+    path('update_working_hours/', views.update_working_hours, name='update_working_hours'),
     # path('update_booking_status/', views.update_booking_status, name='update_booking_status'),
 
 

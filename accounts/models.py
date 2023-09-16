@@ -76,24 +76,50 @@ class CustomUser(AbstractUser):
 #         # return f"{self.start_time.strftime('%I:%M %p')} - {self.end_time.strftime('%I:%M %p')}"
 #         return f"{self.start_time.strftime('%I:%M %p')} "
 
+# class TimeSlot(models.Model):
+#     # name = models.CharField(max_length=30)
+#     start_time = models.TimeField()
+
+#     def __str__(self):
+#         # Calculate the end time by adding one hour to the start_time
+#         start_datetime = datetime.combine(datetime.today(), self.start_time)
+#         end_datetime = start_datetime + timedelta(hours=1)
+
+#         # Format the start and end times as "HH:MM AM/PM"
+#         formatted_start_time = start_datetime.strftime("%I:%M %p")
+#         formatted_end_time = end_datetime.strftime("%I:%M %p")
+
+#         # Combine start and end times to create the name
+#         name = f"{formatted_start_time} - {formatted_end_time}"
+
+#         return name
+    
 class TimeSlot(models.Model):
-    # name = models.CharField(max_length=30)
-    start_time = models.TimeField()
+    DAY_CHOICES = (
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    )
+    SLOT_CHOICES = (
+        ('8-10', '8:00 AM - 10:00 AM'),
+        ('10-12', '10:00 AM - 12:00 PM'),
+        ('1-3', '1:00 PM - 3:00 PM'),
+        ('3-5', '3:00 PM - 5:00 PM'),
+    )
+    
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    slot = models.CharField(max_length=10, choices=SLOT_CHOICES)
 
     def __str__(self):
-        # Calculate the end time by adding one hour to the start_time
-        start_datetime = datetime.combine(datetime.today(), self.start_time)
-        end_datetime = start_datetime + timedelta(hours=1)
+        return f"{self.day} - {self.get_slot_display()}"
 
-        # Format the start and end times as "HH:MM AM/PM"
-        formatted_start_time = start_datetime.strftime("%I:%M %p")
-        formatted_end_time = end_datetime.strftime("%I:%M %p")
+    class Meta:
+        unique_together = ('day', 'slot')  # Ensure unique combinations of day and slot
 
-        # Combine start and end times to create the name
-        name = f"{formatted_start_time} - {formatted_end_time}"
-
-        return name
-    
 
     
 class LawyerProfile(models.Model):
@@ -147,6 +173,7 @@ class LawyerProfile(models.Model):
     currendly_handling = models.IntegerField(null=True, blank=True)
     experience = models.IntegerField(null=True, blank=True)
     court = models.CharField(max_length=200, choices=COURT,blank=True)
+    working_hours = models.ManyToManyField(TimeSlot, blank=True,default="09:00")
 
     # working_time_start = models.TimeField(null=True, blank=True)
     # working_time_end = models.TimeField(null=True, blank=True)

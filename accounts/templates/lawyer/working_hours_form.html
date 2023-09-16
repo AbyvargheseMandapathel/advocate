@@ -1,0 +1,25 @@
+<!-- working_hours_form.html -->
+
+<form method="POST" action="{% url 'set_working_hours' %}">
+    {% csrf_token %}
+    <label>Select Working Hours:</label>
+    <div class="checkbox-group">
+        {% for choice in day_choices %}
+            <h3>{{ choice.1 }}</h3>
+            {% for slot in time_slots %}
+                {% if slot.day == choice.0 %}
+                    <input type="checkbox" name="working_hours" value="{{ choice.0 }}|{{ slot.slot }}" id="{{ choice.0 }}_{{ slot.id }}"
+                           {% if slot.id in existing_working_hours %} checked {% endif %}>
+                    <label for="{{ choice.0 }}_{{ slot.id }}">{{ slot }}</label><br>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+    <button type="submit">Save</button>
+</form>
+
+<form method="POST" action="{% url 'update_working_hours' %}">
+    {% csrf_token %}
+    <p>Current Working Hours: {{ formatted_working_hours }}</p>
+    <button type="submit">Update Working Hours</button>
+</form>
